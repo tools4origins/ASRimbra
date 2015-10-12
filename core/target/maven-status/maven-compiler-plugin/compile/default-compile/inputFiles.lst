@@ -1,0 +1,8 @@
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/exceptions/UserNotFoundException.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/entities/Message.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/entities/Role.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/transformers/JsonTransformer.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/entities/User.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/repositories/UserRepository.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/transformers/XMLTransformer.java
+/mci/ei1417/atitalla/prog/ASRimbra/core/src/main/java/edu/tsp/asr/repositories/MessageRepository.java

@@ -11,4 +11,15 @@
     </parent>
 
     <artifactId>ASRimbra-DirectoryManager</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>edu.tsp.asr</groupId>
+            <artifactId>ASRimbra-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.tsp.asr</groupId>
+            <artifactId>ASRimbra-MemoryRepositories</artifactId>
+        </dependency>
+    </dependencies>
 </project>
