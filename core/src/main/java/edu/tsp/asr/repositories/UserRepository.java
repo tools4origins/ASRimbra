@@ -7,7 +7,12 @@ import java.util.List;
 
 public interface UserRepository {
     void addUser(User user);
+
     void removeUser(User user);
+
     List<User> getAllUsers();
+
     User getUserByMail(String mail) throws UserNotFoundException;
+
+    User getUserByCredentials(String login, String password) throws UserNotFoundException;
 }

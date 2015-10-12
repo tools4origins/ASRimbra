@@ -1,0 +1,5 @@
+#surefire
+#Mon Oct 12 11:45:59 CEST 2015
+user.dir=/home/erwan/prog/tsp/CSC5002/ASRimbra/MailboxManager
+localRepository=/home/erwan/.m2/repository
+basedir=/home/erwan/prog/tsp/CSC5002/ASRimbra/MailboxManager

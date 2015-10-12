@@ -1,8 +1,0 @@
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/entities/Role.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/entities/User.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/exceptions/UserNotFoundException.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/entities/Message.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/repositories/UserRepository.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/repositories/MessageRepository.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/transformers/JsonTransformer.java
-/home/erwan/prog/tsp/CSC5002/ASRimbra/core/src/main/java/edu/tsp/asr/transformers/XMLTransformer.java
