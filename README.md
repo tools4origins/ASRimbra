@@ -8,7 +8,9 @@ Base URL is `localhost:4567`
 
 You can download source using :
 > `git init`
+
 > `git remote add origin git@bitbucket.org:pandawan/asrimbra.git`
+
 > `git pull`
 
 You can download the dependencies and build jars using :
