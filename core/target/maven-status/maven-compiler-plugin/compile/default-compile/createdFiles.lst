@@ -1,0 +1,8 @@
+edu/tsp/asr/exceptions/UserNotFoundException.class
+edu/tsp/asr/entities/User.class
+edu/tsp/asr/transformers/XMLTransformer.class
+edu/tsp/asr/repositories/UserRepository.class
+edu/tsp/asr/entities/Message.class
+edu/tsp/asr/repositories/MessageRepository.class
+edu/tsp/asr/transformers/JsonTransformer.class
+edu/tsp/asr/entities/Role.class
