@@ -32,4 +32,13 @@ public class UserMemoryRepository implements UserRepository {
                 .findAny()
                 .orElseThrow(UserNotFoundException::new);
     }
+
+    @Override
+    public User getUserByCredentials(String mail, String password) throws UserNotFoundException {
+        //@Fixme : Security breach, second condition will be performed only if first is true
+        return users.stream()
+                .filter(u -> u.getMail().equals(mail) && u.checkPassword(password))
+                .findAny()
+                .orElseThrow(UserNotFoundException::new);
+    }
 }
