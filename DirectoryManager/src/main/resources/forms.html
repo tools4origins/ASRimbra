@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>ASRimbra !</title>
+    </head>
+    <body>
+        <h4>Login:</h4>
+        <form method="post" target="ASRimbra" action="http://localhost:7654/connect/">
+            <label for="mail">Mail : <input type="email" name="mail" id="mail" /></label><br />
+            <label for="password">Password : <input type="password" name="password" id="password" /></label>
+            <input type="submit" value="Log in">
+        </form>
+
+        <h4>Logout:</h4>
+        <form method="get" target="ASRimbra" action="http://localhost:4567/mailbox/disconnect/">
+            <input type="submit" value="Log off">
+        </form>
+
+
+        <iframe name="ASRimbra"></iframe>
+    </body>
+</html>
