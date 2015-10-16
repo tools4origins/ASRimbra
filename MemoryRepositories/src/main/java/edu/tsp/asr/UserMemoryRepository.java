@@ -23,6 +23,11 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
+    public void removeUserByMail(String mail) throws UserNotFoundException {
+        removeUser(getUserByMail(mail));
+    }
+
+    @Override
     public List<User> getAllUsers() {
         return users;
     }
