@@ -125,6 +125,12 @@ public class DirectoryManage {
             }
         }, transformer);
 
+        get("/disconnect/", (request, response) -> {
+            request.session().removeAttribute("user");
+            connexion=false;
+            return "";
+        }, transformer);
+
     }
 
 }
