@@ -22,6 +22,8 @@ import static spark.Spark.post;
 
 public class MailboxManager {
     public static void main(String[] a) {
+        System.out.println("Mailbox");
+
         // config
         UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/");
         MailRepository mailRepository = new MailMemoryRepository();

@@ -2,6 +2,7 @@ package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
+import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotAllowedException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.UserRepository;
@@ -17,8 +18,12 @@ public class DirectoryManage {
     public static void main(String[] a) {
         UserRepository userRepository = new UserMemoryRepository();
 
-        userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
-        userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        try {
+            userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
+            userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
         ResponseTransformer transformer = new JsonTransformer();
         System.out.println("Directory");
         port(7654);
@@ -27,8 +32,14 @@ public class DirectoryManage {
 
         post("/user/addUser/", (request, response) -> {
             User user = new User(request.queryParams("email"), request.queryParams("password"));
-            userRepository.addUser(user);
-            return "Added Succefully";
+
+            try{
+                User user1 =userRepository.getUserByMail(user.getMail());
+                return "User registred";
+            }catch (UserNotFoundException  e) {
+                userRepository.addUser(user);
+                return "Added Succefully";
+            }
         });
 
         delete("/user/removeUser/", (request, response) -> {
@@ -46,7 +57,7 @@ public class DirectoryManage {
 
         post("/user/right/update/", (request, response) -> {
             User user = userRepository.getUserByMail(request.queryParams("email"));
-            user.setRole(Role.ADMIN);
+            user.setAdmin();
             return "Updates Succefully";
         });
 
@@ -67,7 +78,7 @@ public class DirectoryManage {
                 );
                 if (user.getRole() == Role.ADMIN) {
                     request.session().attribute("user", user);
-                    response.redirect("/user/all/");
+                    response.redirect("/user/getAllUsers/");
                 }
                 else
                 throw new UserNotAllowedException();
