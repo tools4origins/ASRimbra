@@ -1,11 +1,33 @@
 <html>
-<head>
-    <title>ASRimbra !</title>
-</head>
-<body>
-<form method="post" action="localhost:4567/connect">
-    <label for="mail">Mail : <input type="email" name="mail" id="mail" /></label>
-    <label for="password"><input type="password" name="password" id="password" /></label>
-</form>
-</body>
+    <head>
+        <title>ASRimbra !</title>
+    </head>
+    <body>
+        <h4>Login:</h4>
+        <form method="post" target="ASRimbra" action="http://localhost:4567/connect/">
+            <label for="mail">Mail : <input type="email" name="mail" id="mail" /></label><br />
+            <label for="password">Password : <input type="password" name="password" id="password" /></label>
+            <input type="submit" value="Log in">
+        </form>
+
+        <h4>Logout:</h4>
+        <form method="get" target="ASRimbra" action="http://localhost:4567/mailbox/disconnect/">
+            <input type="submit" value="Log off">
+        </form>
+
+        <h4>Mailbox:</h4>
+        <form method="get" target="ASRimbra" action="http://localhost:4567/mailbox/">
+            <input type="submit" value="Go to mailbox"/>
+        </form>
+
+        <h4>Send mail:</h4>
+        <form method="post" target="ASRimbra" action="http://localhost:4567/mailbox/send/">
+            <label for="to">To : <input type="email" name="to" id="to" /></label><br />
+            <label for="title">Title : <input type="text" name="title" id="title" /></label><br />
+            <label for="content">Content : <textarea name="content" id="content"></textarea></textarea></label><br />
+            <input type="submit" value="Send"/>
+        </form>
+
+        <iframe name="ASRimbra"></iframe>
+    </body>
 </html>

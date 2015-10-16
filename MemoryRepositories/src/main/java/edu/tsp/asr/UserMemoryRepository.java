@@ -9,9 +9,11 @@ import java.util.List;
 
 public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
+    private Integer current_id = 0;
 
     @Override
     public void addUser(User user) {
+        user.setId(++current_id);
         users.add(user);
     }
 
@@ -35,7 +37,6 @@ public class UserMemoryRepository implements UserRepository {
 
     @Override
     public User getUserByCredentials(String mail, String password) throws UserNotFoundException {
-        //@Fixme : Security breach, second condition will be performed only if first is true
         return users.stream()
                 .filter(u -> u.getMail().equals(mail) && u.checkPassword(password))
                 .findAny()

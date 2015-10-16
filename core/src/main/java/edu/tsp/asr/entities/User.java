@@ -3,6 +3,7 @@ package edu.tsp.asr.entities;
 import de.rtner.security.auth.spi.SimplePBKDF2;
 
 public class User {
+    private Integer id;
     private Role role;
     private String mail;
     private String passwordHash;
@@ -33,5 +34,12 @@ public class User {
         return new SimplePBKDF2().verifyKeyFormatted(this.passwordHash, password);
     }
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 }
 
