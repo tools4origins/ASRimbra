@@ -4,6 +4,7 @@ import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.MailingList;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
+import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.MailRepository;
 import edu.tsp.asr.repositories.MailingListRepository;
@@ -22,14 +23,18 @@ import static spark.Spark.post;
 public class MailboxManager {
     public static void main(String[] a) {
         // config
-        UserRepository userRepository = new UserMemoryRepository();
+        UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/");
         MailRepository mailRepository = new MailMemoryRepository();
         MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
         ResponseTransformer transformer = new JsonTransformer();
 
         // Populate repositories for tests
-        userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
-        userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        try {
+            userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
+            userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        } catch (StorageException e) {
+            System.out.println("Unable to populate user repository, difficulty to reach distant server ?");
+        }
         mailRepository.add(
                 new Mail(
                         "guyomarc@tem-tsp.eu",

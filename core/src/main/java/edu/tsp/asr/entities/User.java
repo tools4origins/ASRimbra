@@ -18,8 +18,12 @@ public class User {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setAdmin() {
+        this.role = Role.ADMIN;
+    }
+
+    public void setSimpleUser() {
+        this.role = Role.USER;
     }
 
     public String getMail() {
