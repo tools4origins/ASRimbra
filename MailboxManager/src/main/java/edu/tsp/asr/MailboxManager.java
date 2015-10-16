@@ -1,13 +1,17 @@
 package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Mail;
+import edu.tsp.asr.entities.MailingList;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.MailRepository;
+import edu.tsp.asr.repositories.MailingListRepository;
 import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
+
+import java.util.Optional;
 
 import static spark.Spark.before;
 import static spark.Spark.get;
@@ -19,6 +23,7 @@ public class MailboxManager {
         // config
         UserRepository userRepository = new UserMemoryRepository();
         MailRepository mailRepository = new MailMemoryRepository();
+        MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
         ResponseTransformer transformer = new JsonTransformer();
 
         // Populate repository
@@ -40,6 +45,7 @@ public class MailboxManager {
                         "content2"
                 )
         );
+
 
         get("/", (request, response) -> userRepository.getAllUsers(), transformer);
 
@@ -104,9 +110,26 @@ public class MailboxManager {
                 String to = request.queryParams("to");
                 String title = request.queryParams("title");
                 String content = request.queryParams("content");
-                Mail mail = new Mail(from, to, title, content);
-                mailRepository.add(mail);
-                return mail.getId();
+                Mail newMail;
+
+                // Check if the mail is sent to a mailing list
+                Optional<MailingList> optional = mailingListMemoryRepository.getByAddress(to);
+                if(optional.isPresent()) {
+                    // if so, we forward it directly to all of its subscribers
+                    MailingList mailingList = optional.get();
+                    for(User subscriber: mailingList.getSubscribers()) {
+                        // variable to is here the mailingList address
+                        newMail = new Mail(to, subscriber.getMail(), title, content);
+                        mailRepository.add(newMail);
+                    }
+                    return mailingList.getSubscribers().size();
+                } else {
+                    // else we consider that it is a normal mail
+                    newMail = new Mail(from, to, title, content);
+                    mailRepository.add(newMail);
+                    return newMail.getId();
+                }
+
             } catch (NullPointerException e) {
                 halt(400, "Bad parameters");
                 return null;
