@@ -14,6 +14,7 @@ import spark.ResponseTransformer;
 import java.util.Optional;
 
 import static spark.Spark.before;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
 import static spark.Spark.post;
@@ -26,7 +27,7 @@ public class MailboxManager {
         MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
         ResponseTransformer transformer = new JsonTransformer();
 
-        // Populate repository
+        // Populate repositories for tests
         userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
         userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
         mailRepository.add(
@@ -45,9 +46,6 @@ public class MailboxManager {
                         "content2"
                 )
         );
-
-
-        get("/", (request, response) -> userRepository.getAllUsers(), transformer);
 
         post("/connect/", (request, response) -> {
             try {
@@ -99,6 +97,27 @@ public class MailboxManager {
             }
         }, transformer);
 
+        delete("/mailbox/:id", (request, response) -> {
+            User user = request.session().attribute("user");
+
+            Integer id = 0;
+            try {
+                id = Integer.parseInt(request.params(":id"));
+            } catch (NumberFormatException e) {
+                halt(400, "id is not a number");
+            }
+
+            try {
+                Mail mail = mailRepository.getMailByUserAndId(user, id);
+                mailRepository.remove(mail);
+                response.status(204);
+                return null;
+            } catch (MailNotFoundException e) {
+                halt(404, "Mail not found");
+                return null;
+            }
+        }, transformer);
+
         post("/mailbox/send/", (request, response) -> {
             User user = request.session().attribute("user");
 
@@ -136,5 +155,5 @@ public class MailboxManager {
             }
         }, transformer);
 
-        }
     }
+}
