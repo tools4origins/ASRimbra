@@ -3,10 +3,11 @@ package edu.tsp.asr.entities;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import static javax.persistence.CascadeType.ALL;
 import javax.persistence.OneToMany;
 import java.io.Serializable;
 import java.util.List;
+
+import static javax.persistence.CascadeType.ALL;
 @Entity
 public class MailingList implements Serializable {
     private Integer id;

@@ -29,6 +29,7 @@
             <input type="submit" value="Send"/>
         </form>
 
+        <div id="error"></div>
         <div id="ASRimbra"></div>
         <script>
             $('form').submit(function(e) {
@@ -39,10 +40,11 @@
                     type: form.attr('method'),
                     data: form.serialize(),
                     success: function(data) {
-                    console.log("#"+form.attr('target'), $("#"+form.attr('target')));
                         $("#"+form.attr('target')).html(data);
                     },
-                    error: console.error,
+                    error: function(data) {
+                        $("#"+form.attr('target')).html(data.responseText);
+                    },
                     xhrFields: {
                         withCredentials: true
                     },
