@@ -84,52 +84,59 @@ public class DirectoryManage {
             }
         });
         get("/", (rq, rs) -> {
-               return userRepository.getAllUsers();
+            return userRepository.getAllUsers();
 
-        },transformer);
+        }, transformer);
 
 
         post("/user/addUser/", (request, response) -> {
-                User user = new User(request.queryParams("email"), request.queryParams("password"));
+            User user = new User(request.queryParams("email"), request.queryParams("password"));
 
-                try {
-                    User user1 = userRepository.getUserByMail(user.getMail());
-                    return "User registred";
-                } catch (UserNotFoundException e) {
-                    userRepository.addUser(user);
-                    return "Added Succefully";
-                }
+            try {
+                User user1 = userRepository.getUserByMail(user.getMail());
+                return "User registred";
+            } catch (UserNotFoundException e) {
+                userRepository.addUser(user);
+                return "Added Succefully";
+            }
 
         });
 
+        options("/user/removeUser/:email", (request, response) -> {
+            response.header(
+                    "Access-Control-Allow-Methods",
+                    "DELETE, OPTIONS"
+            );
+            return "";
+        });
 
         delete("/user/removeUser/:email", (request, response) -> {
-                String email;
-                email = request.params(":email");
-                System.out.println(email);
+            String email;
+            email = request.params(":email");
+            System.out.println(email);
 
-                try {
-                    User user = userRepository.getUserByMail(email);
-                    userRepository.removeUser(user);
-                    response.status(204);
-                } catch (UserNotFoundException e) {
-                    halt(404, "User not found");
-                    return null;
-                }
-                return "Removed Succefully";
+            try {
+                User user = userRepository.getUserByMail(email);
+                userRepository.removeUser(user);
+                response.status(204);
+            } catch (UserNotFoundException e) {
+                halt(404, "User not found");
+                return null;
+            }
+            return "Removed Succefully";
 
         }, transformer);
 
         get("/user/right/", (request, response) -> {
-                User user = userRepository.getUserByMail(request.queryParams("user"));
-                return user.getRole();
+            User user = userRepository.getUserByMail(request.queryParams("user"));
+            return user.getRole();
 
         }, transformer);
 
         post("/user/right/update/", (request, response) -> {
-                User user = userRepository.getUserByMail(request.queryParams("email"));
-                user.setAdmin();
-                return "Updates Succefully";
+            User user = userRepository.getUserByMail(request.queryParams("email"));
+            user.setAdmin();
+            return "Updates Succefully";
 
         });
 
@@ -140,7 +147,7 @@ public class DirectoryManage {
         }, transformer);
 
         get("/user/getAllUsers/", (request, response) -> {
-                return userRepository.getAllUsers();
+            return userRepository.getAllUsers();
         }, transformer);
 
 
