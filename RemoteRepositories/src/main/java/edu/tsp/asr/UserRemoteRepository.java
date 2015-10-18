@@ -4,7 +4,6 @@ import com.goebl.david.Request;
 import com.goebl.david.Request.Method;
 import com.goebl.david.Webb;
 import com.goebl.david.WebbException;
-import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MethodNotAllowedException;
 import edu.tsp.asr.exceptions.StorageException;

@@ -4,7 +4,6 @@ import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.MailingList;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
-import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.MailRepository;
 import edu.tsp.asr.repositories.MailingListRepository;
@@ -12,7 +11,6 @@ import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,8 +50,6 @@ public class MailboxManager {
 
         //Allow Cross-origin resource sharing
         before(((request, response) -> {
-            System.out.println("here!");
-            System.out.println(request.headers());
             response.header(
                     "Access-Control-Allow-Origin",
                     request.headers("Origin")
