@@ -12,6 +12,8 @@ import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static spark.Spark.before;
@@ -23,18 +25,12 @@ import static spark.Spark.post;
 public class MailboxManager {
     public static void main(String[] a) {
         // config
-        UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/");
+        UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
         MailRepository mailRepository = new MailMemoryRepository();
         MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
         ResponseTransformer transformer = new JsonTransformer();
 
         // Populate repositories for tests
-        try {
-            userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
-            userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
-        } catch (StorageException e) {
-            System.out.println("Unable to populate user repository, difficulty to reach distant server ?");
-        }
         mailRepository.add(
                 new Mail(
                         "guyomarc@tem-tsp.eu",
@@ -52,6 +48,20 @@ public class MailboxManager {
                 )
         );
 
+        //Allow Cross-origin resource sharing
+        before(((request, response) -> {
+            System.out.println("here!");
+            System.out.println(request.headers());
+            response.header(
+                    "Access-Control-Allow-Origin",
+                    request.headers("Origin")
+            );
+            response.header(
+                    "Access-Control-Allow-Credentials",
+                    "true"
+            );
+        }));
+
         post("/connect/", (request, response) -> {
             try {
                 User user = userRepository.getUserByCredentials(
@@ -68,6 +78,10 @@ public class MailboxManager {
         }, transformer);
 
         before("/mailbox/*", (request, response) -> {
+            List<User> users = userRepository.getAllUsers();
+            System.out.println("Here we are");
+            System.out.println(users.size());
+            request.session().attribute("user", users.get(0));
             if (request.session().attribute("user") == null) {
                 halt(401, "You are not logged in :(");
             }
@@ -138,10 +152,10 @@ public class MailboxManager {
 
                 // Check if the mail is sent to a mailing list
                 Optional<MailingList> optional = mailingListMemoryRepository.getByAddress(to);
-                if(optional.isPresent()) {
+                if (optional.isPresent()) {
                     // if so, we forward it directly to all of its subscribers
                     MailingList mailingList = optional.get();
-                    for(User subscriber: mailingList.getSubscribers()) {
+                    for (User subscriber : mailingList.getSubscribers()) {
                         // variable to is here the mailingList address
                         newMail = new Mail(to, subscriber.getMail(), title, content);
                         mailRepository.add(newMail);
