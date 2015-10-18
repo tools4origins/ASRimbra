@@ -11,7 +11,6 @@ import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
-import java.util.List;
 import java.util.Optional;
 
 import static spark.Spark.before;
@@ -24,9 +23,11 @@ import static spark.Spark.post;
 public class MailboxManager {
     public static void main(String[] a) {
         System.out.println("Mailbox");
-        // @todo: connect via token so it is no longer necessary to use sticky session
-        // @todo: or to login twice for admin
+        // @todo: connect via token so it is no longer necessary to use sticky session or to login twice for admin
+        // Format : username/expiration date/signature
 
+
+        // @todo : use config file
         // config
         UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
         MailRepository mailRepository = new MailMemoryRepository();
@@ -79,10 +80,8 @@ public class MailboxManager {
         }, transformer);
 
         before("/mailbox/*", (request, response) -> {
-            List<User> users = userRepository.getAll();
-            System.out.println("Here we are");
-            System.out.println(users.size());
-            request.session().attribute("user", users.get(0));
+            User user = userRepository.getByMail("guyomarc@tem-tsp.eu");
+            request.session().attribute("user", user);
             if (request.session().attribute("user") == null) {
                 halt(401, "You are not logged in :(");
             }
@@ -174,6 +173,6 @@ public class MailboxManager {
                 return null;
             }
         }, transformer);
-
+        // @todo : lot of todo on directory manager are good for this class too
     }
 }

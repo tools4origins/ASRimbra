@@ -15,13 +15,16 @@ import java.util.List;
 import static spark.Spark.*;
 
 public class DirectoryManage {
+    // @todo : connexion should be remove as it is no longer used
     public static boolean connexion=false;
 
 
-
+    // @todo : forms used on client should be in the same page
     public static void main(String[] a) {
         UserRepository userRepository = new UserMemoryRepository();
 
+        // Populate repository in order to facilitate tests
+        // @todo : setAdmin() should be call directly the user
         try {
             userRepository.add(new User("guyomarc@tem-tsp.eu", "passwd"));
             userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
@@ -36,8 +39,12 @@ public class DirectoryManage {
         } catch (StorageException e) {
             e.printStackTrace();
         }
+
+        // @todo : transformer should be a static attribute
         ResponseTransformer transformer = new JsonTransformer();
+        // Specifies the port listened by the DirectoryManager
         port(7654);
+
         //Allow Cross-origin resource sharing
         before(((request, response) -> {
             response.header(
@@ -75,22 +82,21 @@ public class DirectoryManage {
 
         before("/user/*", (request, response) -> {
             List<User> users = userRepository.getAll();
-            System.out.println("Here we are");
-            System.out.println(users.size());
             request.session().attribute("user", users.get(0));
             if (request.session().attribute("user") == null) {
                 halt(401, "You are not logged in :(");
             }
         });
+
+        // @todo : normalize lambdas parameters
         get("/", (rq, rs) -> {
             return userRepository.getAll();
-
         }, transformer);
-
 
         post("/user/add/", (request, response) -> {
             User user = new User(request.queryParams("email"), request.queryParams("password"));
 
+            // @todo : *Repository.add should throw exception if user already exist instead of current behavior
             try {
                 User user1 = userRepository.getByMail(user.getMail());
                 return "User registred";
@@ -101,7 +107,8 @@ public class DirectoryManage {
 
         });
 
-        options("/user/remove/:email", (request, response) -> {
+        // @todo: refactor to generalise
+        options("/user/removeByEmail", (request, response) -> {
             response.header(
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
@@ -109,9 +116,9 @@ public class DirectoryManage {
             return "";
         });
 
-        delete("/user/remove/:email", (request, response) -> {
+        delete("/user/removeByEmail", (request, response) -> {
             String email;
-            email = request.params(":email");
+            email = request.queryParams("email");
             System.out.println(email);
 
             try {
@@ -126,28 +133,25 @@ public class DirectoryManage {
 
         }, transformer);
 
-        get("/user/right/", (request, response) -> {
+        get("/user/getRight", (request, response) -> {
             User user = userRepository.getByMail(request.queryParams("user"));
             return user.getRole();
 
         }, transformer);
 
-        post("/user/right/update/", (request, response) -> {
+        post("/user/setRight", (request, response) -> {
             User user = userRepository.getByMail(request.queryParams("email"));
             user.setAdmin();
             return "Updates Succefully";
-
         });
 
-        get("/user/getByMail/", (request, response) -> {
-                return userRepository.getByMail(request.queryParams("email"));
+        get("/user/getByMail", (request, response) -> {
+            return userRepository.getByMail(request.queryParams("email"));
         }, transformer);
 
-        get("/user/getAll/", (request, response) -> {
+        get("/user/getAll", (request, response) -> {
             return userRepository.getAll();
         }, transformer);
-
-
 
         get("/disconnect/", (request, response) -> {
             request.session().removeAttribute("user");
@@ -155,6 +159,10 @@ public class DirectoryManage {
             return "";
         }, transformer);
 
+        // @todo : consider using exception (spark framework style)
+        // @todo : set status code in previous code
+        // @todo : correct english typo in previous code
+        // @todo : implement missing route or remove use of them (add for example)
     }
 
 }

@@ -30,9 +30,6 @@ public class UserRemoteRepository implements UserRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("user", user);
         JSONObject obj = getRemoteObject("add", Method.POST, params);
-        System.out.println("---------- START ---------");
-        System.out.println(obj);
-        System.out.println("----------- END ----------");
     }
 
     @Override
@@ -77,7 +74,7 @@ public class UserRemoteRepository implements UserRepository {
     public User getByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
-        getRemoteObject("getByMail", Method.POST, params);
+        getRemoteObject("getByMail", Method.GET, params);
         return null;
     }
 
