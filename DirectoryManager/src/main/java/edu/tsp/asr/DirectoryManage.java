@@ -11,6 +11,7 @@ import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
 
+import java.util.List;
 
 import static spark.Spark.*;
 
@@ -50,76 +51,6 @@ public class DirectoryManage {
             );
         }));
 
-        get("/", (rq, rs) -> {
-            if (connexion)
-               return userRepository.getAllUsers();
-            else return "You have to connect";
-
-        },transformer);
-
-
-        post("/user/addUser/", (request, response) -> {
-            if (connexion) {
-                User user = new User(request.queryParams("email"), request.queryParams("password"));
-
-                try {
-                    User user1 = userRepository.getUserByMail(user.getMail());
-                    return "User registred";
-                } catch (UserNotFoundException e) {
-                    userRepository.addUser(user);
-                    return "Added Succefully";
-                }
-            }
-            else return "You have to connect";
-        });
-
-
-        delete("/user/removeUser/:email", (request, response) -> {
-            if (connexion) {
-                String email;
-                email = request.params(":email");
-                System.out.println(email);
-
-                try {
-                    User user = userRepository.getUserByMail(email);
-                    userRepository.removeUser(user);
-                    response.status(204);
-                } catch (UserNotFoundException e) {
-                    halt(404, "User not found");
-                    return null;
-                }
-                return "Removed Succefully";
-            } else return "You have to connect";
-        }, transformer);
-
-        get("/user/right/", (request, response) -> {
-            if (connexion) {
-                User user = userRepository.getUserByMail(request.queryParams("user"));
-                return user.getRole();
-            } else return "You have to connect";
-        }, transformer);
-
-        post("/user/right/update/", (request, response) -> {
-            if (connexion) {
-                User user = userRepository.getUserByMail(request.queryParams("email"));
-                user.setAdmin();
-                return "Updates Succefully";
-            } else return "You have to connect";
-        });
-
-        get("/user/getUserByMail/", (request, response) -> {
-            if (connexion) {
-                User user = userRepository.getUserByMail(request.queryParams("email"));
-                return user;
-            } else return "You have to connect";
-        }, transformer);
-
-        get("/user/getAllUsers/", (request, response) -> {
-            if (connexion) {
-                return userRepository.getAllUsers();
-            } else return "You have to connect";
-        }, transformer);
-
         post("/connect/", (request, response) -> {
             try {
                 User user = userRepository.getUserByCredentials(
@@ -142,6 +73,77 @@ public class DirectoryManage {
                 return "";
             }
         }, transformer);
+
+        before("/user/*", (request, response) -> {
+            List<User> users = userRepository.getAllUsers();
+            System.out.println("Here we are");
+            System.out.println(users.size());
+            request.session().attribute("user", users.get(0));
+            if (request.session().attribute("user") == null) {
+                halt(401, "You are not logged in :(");
+            }
+        });
+        get("/", (rq, rs) -> {
+               return userRepository.getAllUsers();
+
+        },transformer);
+
+
+        post("/user/addUser/", (request, response) -> {
+                User user = new User(request.queryParams("email"), request.queryParams("password"));
+
+                try {
+                    User user1 = userRepository.getUserByMail(user.getMail());
+                    return "User registred";
+                } catch (UserNotFoundException e) {
+                    userRepository.addUser(user);
+                    return "Added Succefully";
+                }
+
+        });
+
+
+        delete("/user/removeUser/:email", (request, response) -> {
+                String email;
+                email = request.params(":email");
+                System.out.println(email);
+
+                try {
+                    User user = userRepository.getUserByMail(email);
+                    userRepository.removeUser(user);
+                    response.status(204);
+                } catch (UserNotFoundException e) {
+                    halt(404, "User not found");
+                    return null;
+                }
+                return "Removed Succefully";
+
+        }, transformer);
+
+        get("/user/right/", (request, response) -> {
+                User user = userRepository.getUserByMail(request.queryParams("user"));
+                return user.getRole();
+
+        }, transformer);
+
+        post("/user/right/update/", (request, response) -> {
+                User user = userRepository.getUserByMail(request.queryParams("email"));
+                user.setAdmin();
+                return "Updates Succefully";
+
+        });
+
+        get("/user/getUserByMail/", (request, response) -> {
+                User user = userRepository.getUserByMail(request.queryParams("email"));
+                return user;
+
+        }, transformer);
+
+        get("/user/getAllUsers/", (request, response) -> {
+                return userRepository.getAllUsers();
+        }, transformer);
+
+
 
         get("/disconnect/", (request, response) -> {
             request.session().removeAttribute("user");
