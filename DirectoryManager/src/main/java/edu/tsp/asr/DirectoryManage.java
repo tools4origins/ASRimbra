@@ -141,9 +141,7 @@ public class DirectoryManage {
         });
 
         get("/user/getUserByMail/", (request, response) -> {
-                User user = userRepository.getUserByMail(request.queryParams("email"));
-                return user;
-
+                return userRepository.getUserByMail(request.queryParams("email"));
         }, transformer);
 
         get("/user/getAllUsers/", (request, response) -> {
