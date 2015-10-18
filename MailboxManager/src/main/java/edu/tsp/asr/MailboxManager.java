@@ -18,11 +18,14 @@ import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
+import static spark.Spark.options;
 import static spark.Spark.post;
 
 public class MailboxManager {
     public static void main(String[] a) {
         System.out.println("Mailbox");
+        // @todo: connect via token so it is no longer necessary to use sticky session
+        // @todo: or to login twice for admin
 
         // config
         UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
@@ -62,7 +65,7 @@ public class MailboxManager {
 
         post("/connect/", (request, response) -> {
             try {
-                User user = userRepository.getUserByCredentials(
+                User user = userRepository.getByCredentials(
                         request.queryParams("mail"),
                         request.queryParams("password")
                 );
@@ -76,7 +79,7 @@ public class MailboxManager {
         }, transformer);
 
         before("/mailbox/*", (request, response) -> {
-            List<User> users = userRepository.getAllUsers();
+            List<User> users = userRepository.getAll();
             System.out.println("Here we are");
             System.out.println(users.size());
             request.session().attribute("user", users.get(0));
@@ -87,7 +90,7 @@ public class MailboxManager {
 
         get("/mailbox/", (request, response) -> {
             User user = request.session().attribute("user");
-            return mailRepository.getMailByUser(user);
+            return mailRepository.getByUser(user);
         }, transformer);
 
 
@@ -107,7 +110,7 @@ public class MailboxManager {
             }
 
             try {
-                return mailRepository.getMailByUserAndId(user, id);
+                return mailRepository.getByUserAndId(user, id);
             } catch (MailNotFoundException e) {
                 halt(404, "Mail not found");
                 return null;
@@ -125,7 +128,7 @@ public class MailboxManager {
             }
 
             try {
-                Mail mail = mailRepository.getMailByUserAndId(user, id);
+                Mail mail = mailRepository.getByUserAndId(user, id);
                 mailRepository.remove(mail);
                 response.status(204);
                 return null;

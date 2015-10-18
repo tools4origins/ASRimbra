@@ -26,32 +26,32 @@ public class UserRemoteRepository implements UserRepository {
     }
 
     @Override
-    public void addUser(User user) throws StorageException {
+    public void add(User user) throws StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user", user);
-        JSONObject obj = getRemoteObject("addUser", Method.POST, params);
+        JSONObject obj = getRemoteObject("add", Method.POST, params);
         System.out.println("---------- START ---------");
         System.out.println(obj);
         System.out.println("----------- END ----------");
     }
 
     @Override
-    public void removeUser(User user) throws UserNotFoundException, StorageException {
-        removeUserByMail(user.getMail());
+    public void remove(User user) throws UserNotFoundException, StorageException {
+        removeByMail(user.getMail());
     }
 
     @Override
-    public void removeUserByMail(String mail) throws UserNotFoundException, StorageException {
+    public void removeByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
-        getRemoteObject("removeUserByMail", Method.DELETE, params);
+        getRemoteObject("removeByMail", Method.DELETE, params);
     }
 
     @Override
-    public List<User> getAllUsers() throws StorageException {
+    public List<User> getAll() throws StorageException {
         List<User> users = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
-        JSONArray array = getRemoteArray("getAllUsers", Method.GET, params);
+        JSONArray array = getRemoteArray("getAll", Method.GET, params);
         System.out.println(array);
         System.out.println(array.length());
         User user;
@@ -74,19 +74,19 @@ public class UserRemoteRepository implements UserRepository {
     }
 
     @Override
-    public User getUserByMail(String mail) throws UserNotFoundException, StorageException {
+    public User getByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
-        getRemoteObject("getUserByMail", Method.POST, params);
+        getRemoteObject("getByMail", Method.POST, params);
         return null;
     }
 
     @Override
-    public User getUserByCredentials(String mail, String password) throws UserNotFoundException, StorageException {
+    public User getByCredentials(String mail, String password) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
         params.put("user_password", password);
-        getRemoteObject("getUserByCredentials", Method.POST, params);
+        getRemoteObject("getByCredentials", Method.POST, params);
         return null;
     }
 

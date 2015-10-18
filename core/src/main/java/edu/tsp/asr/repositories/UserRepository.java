@@ -7,15 +7,15 @@ import edu.tsp.asr.exceptions.UserNotFoundException;
 import java.util.List;
 
 public interface UserRepository {
-    void addUser(User user) throws StorageException;
+    void add(User user) throws StorageException;
 
-    void removeUser(User user) throws UserNotFoundException, StorageException;
+    void remove(User user) throws UserNotFoundException, StorageException;
 
-    void removeUserByMail(String mail) throws UserNotFoundException, StorageException;
+    void removeByMail(String mail) throws UserNotFoundException, StorageException;
 
-    List<User> getAllUsers() throws StorageException;
+    List<User> getAll() throws StorageException;
 
-    User getUserByMail(String mail) throws UserNotFoundException, StorageException;
+    User getByMail(String mail) throws UserNotFoundException, StorageException;
 
-    User getUserByCredentials(String login, String password) throws UserNotFoundException, StorageException;
+    User getByCredentials(String login, String password) throws UserNotFoundException, StorageException;
 }

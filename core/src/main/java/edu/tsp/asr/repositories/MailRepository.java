@@ -7,8 +7,8 @@ import edu.tsp.asr.exceptions.MailNotFoundException;
 import java.util.List;
 
 public interface MailRepository {
-    List<Mail> getMailByUser(User user);
-    Mail getMailByUserAndId(User user, Integer id) throws MailNotFoundException;
+    List<Mail> getByUser(User user);
+    Mail getByUserAndId(User user, Integer id) throws MailNotFoundException;
     void add(Mail mail);
     void remove(Mail mail);
 }

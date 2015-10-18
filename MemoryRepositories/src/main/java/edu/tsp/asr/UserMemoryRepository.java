@@ -6,8 +6,7 @@ import edu.tsp.asr.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
 public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
     private Integer current_id = 0;
@@ -17,31 +16,31 @@ public class UserMemoryRepository implements UserRepository {
 
 
     @Override
-    public void addUser(User user) {
+    public void add(User user) {
         user.setId(++current_id);
         //em.persist(user);
         users.add(user);
     }
 
     @Override
-    public void removeUser(User user) {
+    public void remove(User user) {
         //em.merge(user);
         //em.remove(user);
         users.remove(user);
     }
 
     @Override
-    public void removeUserByMail(String mail) throws UserNotFoundException {
-        removeUser(getUserByMail(mail));
+    public void removeByMail(String mail) throws UserNotFoundException {
+        remove(getByMail(mail));
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         return users;
     }
 
     @Override
-    public User getUserByMail(String mail) throws UserNotFoundException {
+    public User getByMail(String mail) throws UserNotFoundException {
         return users.stream()
                 .filter(u -> u.getMail().equals(mail))
                 .findAny()
@@ -49,7 +48,7 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
-    public User getUserByCredentials(String mail, String password) throws UserNotFoundException {
+    public User getByCredentials(String mail, String password) throws UserNotFoundException {
         return users.stream()
                 .filter(u -> u.getMail().equals(mail) && u.checkPassword(password))
                 .findAny()

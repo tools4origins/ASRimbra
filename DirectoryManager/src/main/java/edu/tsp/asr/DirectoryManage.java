@@ -2,7 +2,6 @@ package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
-import edu.tsp.asr.exceptions.MailNotFoundException;
 import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotAllowedException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
@@ -24,13 +23,13 @@ public class DirectoryManage {
         UserRepository userRepository = new UserMemoryRepository();
 
         try {
-            userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
-            userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+            userRepository.add(new User("guyomarc@tem-tsp.eu", "passwd"));
+            userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
         } catch (StorageException e) {
             e.printStackTrace();
         }
         try {
-            User u = userRepository.getUserByMail("guyomarc@tem-tsp.eu");
+            User u = userRepository.getByMail("guyomarc@tem-tsp.eu");
             u.setAdmin();
         } catch (UserNotFoundException e) {
             e.printStackTrace();
@@ -53,14 +52,14 @@ public class DirectoryManage {
 
         post("/connect/", (request, response) -> {
             try {
-                User user = userRepository.getUserByCredentials(
+                User user = userRepository.getByCredentials(
                         request.queryParams("mail"),
                         request.queryParams("password")
                 );
                 if (user.getRole() == Role.ADMIN) {
                     request.session().attribute("user", user);
                     connexion = true;
-                    response.redirect("/user/getAllUsers/");
+                    response.redirect("/user/getAll/");
                 } else
                     throw new UserNotAllowedException();
 
@@ -75,7 +74,7 @@ public class DirectoryManage {
         }, transformer);
 
         before("/user/*", (request, response) -> {
-            List<User> users = userRepository.getAllUsers();
+            List<User> users = userRepository.getAll();
             System.out.println("Here we are");
             System.out.println(users.size());
             request.session().attribute("user", users.get(0));
@@ -84,25 +83,25 @@ public class DirectoryManage {
             }
         });
         get("/", (rq, rs) -> {
-            return userRepository.getAllUsers();
+            return userRepository.getAll();
 
         }, transformer);
 
 
-        post("/user/addUser/", (request, response) -> {
+        post("/user/add/", (request, response) -> {
             User user = new User(request.queryParams("email"), request.queryParams("password"));
 
             try {
-                User user1 = userRepository.getUserByMail(user.getMail());
+                User user1 = userRepository.getByMail(user.getMail());
                 return "User registred";
             } catch (UserNotFoundException e) {
-                userRepository.addUser(user);
+                userRepository.add(user);
                 return "Added Succefully";
             }
 
         });
 
-        options("/user/removeUser/:email", (request, response) -> {
+        options("/user/remove/:email", (request, response) -> {
             response.header(
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
@@ -110,14 +109,14 @@ public class DirectoryManage {
             return "";
         });
 
-        delete("/user/removeUser/:email", (request, response) -> {
+        delete("/user/remove/:email", (request, response) -> {
             String email;
             email = request.params(":email");
             System.out.println(email);
 
             try {
-                User user = userRepository.getUserByMail(email);
-                userRepository.removeUser(user);
+                User user = userRepository.getByMail(email);
+                userRepository.remove(user);
                 response.status(204);
             } catch (UserNotFoundException e) {
                 halt(404, "User not found");
@@ -128,24 +127,24 @@ public class DirectoryManage {
         }, transformer);
 
         get("/user/right/", (request, response) -> {
-            User user = userRepository.getUserByMail(request.queryParams("user"));
+            User user = userRepository.getByMail(request.queryParams("user"));
             return user.getRole();
 
         }, transformer);
 
         post("/user/right/update/", (request, response) -> {
-            User user = userRepository.getUserByMail(request.queryParams("email"));
+            User user = userRepository.getByMail(request.queryParams("email"));
             user.setAdmin();
             return "Updates Succefully";
 
         });
 
-        get("/user/getUserByMail/", (request, response) -> {
-                return userRepository.getUserByMail(request.queryParams("email"));
+        get("/user/getByMail/", (request, response) -> {
+                return userRepository.getByMail(request.queryParams("email"));
         }, transformer);
 
-        get("/user/getAllUsers/", (request, response) -> {
-            return userRepository.getAllUsers();
+        get("/user/getAll/", (request, response) -> {
+            return userRepository.getAll();
         }, transformer);
 
 
