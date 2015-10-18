@@ -74,7 +74,7 @@ public class DirectoryManage {
             }
         }, transformer);
 
-        before("/user/*", (request, response) -> {
+        before("/*", (request, response) -> {
             List<User> users = userRepository.getAllUsers();
             System.out.println("Here we are");
             System.out.println(users.size());
@@ -102,22 +102,41 @@ public class DirectoryManage {
 
         });
 
+        get("/user/removeUser/:id", (request, response) -> {
 
-        delete("/user/removeUser/:email", (request, response) -> {
-                String email;
-                email = request.params(":email");
-                System.out.println(email);
+            Integer id = 0;
+            try {
+                id = Integer.parseInt(request.params(":id"));
+            } catch (NumberFormatException e) {
+                halt(400, "id is not a number");
+            }
 
-                try {
-                    User user = userRepository.getUserByMail(email);
-                    userRepository.removeUser(user);
-                    response.status(204);
-                } catch (UserNotFoundException e) {
-                    halt(404, "User not found");
-                    return null;
-                }
-                return "Removed Succefully";
+            try {
+                return userRepository.getUserById(id);
+            } catch (UserNotFoundException e) {
+                halt(404, "Mail not found");
+                return null;
+            }
+        }, transformer);
 
+        delete("/user/removeUser/:id", (request, response) -> {
+
+            Integer id = 0;
+            try {
+                id = Integer.parseInt(request.params(":id"));
+            } catch (NumberFormatException e) {
+                halt(400, "id is not a number");
+            }
+
+            try {
+                User user= userRepository.getUserById(id);
+                userRepository.removeUser(user);
+                response.status(204);
+                return null;
+            } catch (UserNotFoundException e) {
+                halt(404, "Mail not found");
+                return null;
+            }
         }, transformer);
 
         get("/user/right/", (request, response) -> {
