@@ -31,8 +31,8 @@
             <artifactId>gson</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.goebl</groupId>
-            <artifactId>david-webb</artifactId>
+            <groupId>javax.persistence</groupId>
+            <artifactId>persistence-api</artifactId>
         </dependency>
     </dependencies>
 </project>

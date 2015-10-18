@@ -1,6 +1,12 @@
 package edu.tsp.asr.entities;
 
-public class Mail {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.Serializable;
+
+@Entity
+public class Mail implements Serializable {
     private Integer id;
     private String from;
     private String to;
@@ -13,7 +19,9 @@ public class Mail {
         this.title = title;
         this.content = content;
     }
+    @Id
 
+	@Column(name="MAIL_ID")
     public Integer getId() {
         return id;
     }
@@ -22,6 +30,7 @@ public class Mail {
         this.id = id;
     }
 
+	@Column(name="MAIL_FROM")
     public String getFrom() {
         return from;
     }
@@ -30,6 +39,7 @@ public class Mail {
         this.from = from;
     }
 
+    @Column(name="MAIL_TO")
     public String getTo() {
         return to;
     }
@@ -38,6 +48,7 @@ public class Mail {
         this.to = to;
     }
 
+    @Column(name="MAIL_TITLE")
     public String getTitle() {
         return title;
     }
@@ -46,6 +57,7 @@ public class Mail {
         this.title = title;
     }
 
+    @Column(name="MAIL_CONTENT")
     public String getContent() {
         return content;
     }

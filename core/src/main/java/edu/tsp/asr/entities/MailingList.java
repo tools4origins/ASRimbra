@@ -1,12 +1,20 @@
 package edu.tsp.asr.entities;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import static javax.persistence.CascadeType.ALL;
+import javax.persistence.OneToMany;
+import java.io.Serializable;
 import java.util.List;
-
-public class MailingList {
+@Entity
+public class MailingList implements Serializable {
     private Integer id;
     private List<User> subscribers;
     private String address;
 
+    @Id
+	@Column(name="LIST_ID")
     public Integer getId() {
         return id;
     }
@@ -15,6 +23,16 @@ public class MailingList {
         this.id = id;
     }
 
+    @Column(name="LIST_ADDRESS")
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @OneToMany(cascade=ALL, mappedBy="LIST")
     public List<User> getSubscribers() {
         return subscribers;
     }
@@ -23,11 +41,4 @@ public class MailingList {
         this.subscribers.add(subscriber);
     }
 
-    public String getAddress() {
-        return address;
     }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-}
