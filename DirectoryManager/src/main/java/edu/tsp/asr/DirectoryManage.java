@@ -9,13 +9,18 @@ import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
+
+
 import static spark.Spark.*;
 
 /**
  * Created by atitalla on 12/10/15.
  */
+
 public class DirectoryManage {
     public static boolean connexion=false;
+
+
 
     public static void main(String[] a) {
         UserRepository userRepository = new UserMemoryRepository();
