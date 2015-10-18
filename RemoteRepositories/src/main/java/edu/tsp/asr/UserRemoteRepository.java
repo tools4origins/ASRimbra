@@ -9,6 +9,8 @@ import edu.tsp.asr.exceptions.MethodNotAllowedException;
 import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.UserRepository;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public class UserRemoteRepository implements UserRepository {
     public void addUser(User user) throws StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user", user);
-        JSONObject obj = sendRequest("addUser", Method.POST, params);
+        JSONObject obj = getRemoteObject("addUser", Method.POST, params);
         System.out.println("---------- START ---------");
         System.out.println(obj);
         System.out.println("----------- END ----------");
@@ -42,13 +44,25 @@ public class UserRemoteRepository implements UserRepository {
     public void removeUserByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
-        sendRequest("removeUserByMail", Method.DELETE, params);
+        getRemoteObject("removeUserByMail", Method.DELETE, params);
     }
 
     @Override
     public List<User> getAllUsers() throws StorageException {
         List<User> users = new ArrayList<>();
-        JSONObject obj = sendRequest("getAllUsers", Method.GET, null);
+        Map<String, Object> params = new HashMap<>();
+        JSONArray obj = getRemoteArray("getAllUsers", Method.GET, params);
+        System.out.println(obj);
+        User user;
+        try {
+            for (int i = 0; i < obj.length(); ++i) {
+                JSONObject userData = obj.getJSONObject(i);
+                user = new User();
+                user.populate(userData);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         return users;
     }
 
@@ -56,7 +70,7 @@ public class UserRemoteRepository implements UserRepository {
     public User getUserByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
-        sendRequest("getUserByMail", Method.POST, params);
+        getRemoteObject("getUserByMail", Method.POST, params);
         return null;
     }
 
@@ -65,11 +79,11 @@ public class UserRemoteRepository implements UserRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("user_mail", mail);
         params.put("user_password", password);
-        sendRequest("getUserByCredentials", Method.POST, params);
+        getRemoteObject("getUserByCredentials", Method.POST, params);
         return null;
     }
 
-    private JSONObject sendRequest(String URI, Method method, Map<String, Object> params) throws StorageException {
+    private Request generateRequest(String URI, Method method, Map<String, Object> params) throws StorageException {
         Webb webb = Webb.create();
         Request request;
         try {
@@ -90,8 +104,7 @@ public class UserRemoteRepository implements UserRepository {
                     throw new MethodNotAllowedException();
             }
         } catch (MethodNotAllowedException e) {
-            e.printStackTrace();
-            return null;
+            throw new StorageException();
         }
 
         for(Map.Entry<String, Object> param : params.entrySet()) {
@@ -99,9 +112,25 @@ public class UserRemoteRepository implements UserRepository {
         }
         request.ensureSuccess();
 
+        return request;
+    }
+
+    private JSONArray getRemoteArray(String URI, Method method, Map<String, Object> params) throws StorageException {
         try {
+            Request request = generateRequest(URI, method, params);
+            return request.asJsonArray().getBody();
+        } catch (WebbException e) {
+            e.printStackTrace();
+            throw new StorageException();
+        }
+    }
+
+    private JSONObject getRemoteObject(String URI, Method method, Map<String, Object> params) throws StorageException {
+        try {
+            Request request = generateRequest(URI, method, params);
             return request.asJsonObject().getBody();
         } catch (WebbException e) {
+            e.printStackTrace();
             throw new StorageException();
         }
     }
