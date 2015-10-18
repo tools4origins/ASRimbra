@@ -1,6 +1,8 @@
 package edu.tsp.asr.entities;
 
 import de.rtner.security.auth.spi.SimplePBKDF2;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class User {
     private Integer id;
@@ -8,14 +10,23 @@ public class User {
     private String mail;
     private String passwordHash;
 
+    public User() {
+
+    }
+
     public User(String mail, String password) {
         this.mail = mail;
         this.setPassword(password);
         this.role = Role.USER;
     }
 
+
     public Role getRole() {
         return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public void setAdmin() {
@@ -28,6 +39,10 @@ public class User {
 
     public String getMail() {
         return mail;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
     }
 
     public void setPassword(String password) {

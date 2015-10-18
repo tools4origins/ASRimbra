@@ -4,6 +4,7 @@ import com.goebl.david.Request;
 import com.goebl.david.Request.Method;
 import com.goebl.david.Webb;
 import com.goebl.david.WebbException;
+import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MethodNotAllowedException;
 import edu.tsp.asr.exceptions.StorageException;
@@ -51,18 +52,25 @@ public class UserRemoteRepository implements UserRepository {
     public List<User> getAllUsers() throws StorageException {
         List<User> users = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
-        JSONArray obj = getRemoteArray("getAllUsers", Method.GET, params);
-        System.out.println(obj);
+        JSONArray array = getRemoteArray("getAllUsers", Method.GET, params);
+        System.out.println(array);
+        System.out.println(array.length());
         User user;
-        try {
-            for (int i = 0; i < obj.length(); ++i) {
-                JSONObject userData = obj.getJSONObject(i);
+        for (int i = 0; i < array.length(); ++i) {
+
+            try {
+                JSONObject userData = array.getJSONObject(i);
                 user = new User();
-                user.populate(userData);
+                user.setId((Integer) userData.get("id"));
+                user.setMail((String) userData.get("mail"));
+                users.add(user);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+
         }
+        System.out.println(users.size());
+
         return users;
     }
 

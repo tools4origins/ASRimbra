@@ -2,6 +2,7 @@ package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
+import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotAllowedException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.UserRepository;
@@ -17,13 +18,16 @@ public class DirectoryManage {
     public static void main(String[] a) {
         UserRepository userRepository = new UserMemoryRepository();
 
-        userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
-        userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        try {
+            userRepository.addUser(new User("guyomarc@tem-tsp.eu", "passwd"));
+            userRepository.addUser(new User("atilalla@tem-tsp.eu", "passwd2"));
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
         ResponseTransformer transformer = new JsonTransformer();
         System.out.println("Directory");
         port(7654);
         get("/", (rq, rs) -> userRepository.getAllUsers(),transformer);
-
 
         post("/user/addUser/", (request, response) -> {
             User user = new User(request.queryParams("email"), request.queryParams("password"));
@@ -31,7 +35,7 @@ public class DirectoryManage {
             return "Added Succefully";
         });
 
-        delete("/user/removeUser/", (request, response) -> {
+        delete("/user/removeUser", (request, response) -> {
             System.out.println("Hi");
             User user = userRepository.getUserByMail(request.queryParams("email"));
             System.out.println(user.getMail());
@@ -46,16 +50,16 @@ public class DirectoryManage {
 
         post("/user/right/update/", (request, response) -> {
             User user = userRepository.getUserByMail(request.queryParams("email"));
-            user.setRole(Role.ADMIN);
+            user.setAdmin();
             return "Updates Succefully";
         });
 
-        get("/user/getUserByMail/", (request, response) -> {
+        get("/user/getUserByMail", (request, response) -> {
             User user = userRepository.getUserByMail(request.queryParams("email"));
             return user;
         },transformer);
 
-        get("/user/getAllUsers/", (request, response) -> {
+        get("/user/getAllUsers", (request, response) -> {
             return userRepository.getAllUsers();
         },transformer);
 
@@ -68,17 +72,14 @@ public class DirectoryManage {
                 if (user.getRole() == Role.ADMIN) {
                     request.session().attribute("user", user);
                     response.redirect("/user/all/");
-                }
-                else
-                throw new UserNotAllowedException();
+                } else
+                    throw new UserNotAllowedException();
 
-                    return "";
+                return "";
             } catch (UserNotFoundException e) {
                 halt(403, "Bad credentials :(");
                 return "";
-            }
-            catch (UserNotAllowedException e)
-            {
+            } catch (UserNotAllowedException e) {
                 halt(403, "Not allowed :(");
                 return "";
             }
