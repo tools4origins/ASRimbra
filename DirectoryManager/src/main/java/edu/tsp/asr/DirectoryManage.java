@@ -2,6 +2,7 @@ package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
+import edu.tsp.asr.exceptions.MailNotFoundException;
 import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotAllowedException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
@@ -12,10 +13,6 @@ import spark.ResponseTransformer;
 
 
 import static spark.Spark.*;
-
-/**
- * Created by atitalla on 12/10/15.
- */
 
 public class DirectoryManage {
     public static boolean connexion=false;
@@ -64,48 +61,51 @@ public class DirectoryManage {
             else return "You have to connect";
         });
 
-        delete("/user/removeUser/", (request, response) -> {
-            if( connexion) {
-                User user = userRepository.getUserByMail(request.queryParams("email"));
-                System.out.println(user.getMail());
-                userRepository.removeUser(user);
-                return "Removed Succefully";
-            }
-            else return "You have to connect";
 
-        });
+        delete("/user/removeUser/:email", (request, response) -> {
+            if (connexion) {
+                String email;
+                email = request.params(":email");
+
+                try {
+                    User user = userRepository.getUserByMail(email);
+                    userRepository.removeUser(user);
+                    response.status(204);
+                } catch (UserNotFoundException e) {
+                    halt(404, "User not found");
+                    return null;
+                }
+                return "Removed Succefully";
+            } else return "You have to connect";
+        }, transformer);
 
         get("/user/right/", (request, response) -> {
-            if (connexion){
-            User user = userRepository.getUserByMail(request.queryParams("user"));
-            return user.getRole();
-            }
-            else return "You have to connect";
-        },transformer);
+            if (connexion) {
+                User user = userRepository.getUserByMail(request.queryParams("user"));
+                return user.getRole();
+            } else return "You have to connect";
+        }, transformer);
 
         post("/user/right/update/", (request, response) -> {
             if (connexion) {
                 User user = userRepository.getUserByMail(request.queryParams("email"));
                 user.setAdmin();
                 return "Updates Succefully";
-            }
-            else return "You have to connect";
+            } else return "You have to connect";
         });
 
         get("/user/getUserByMail/", (request, response) -> {
-            if (connexion){
-            User user = userRepository.getUserByMail(request.queryParams("email"));
-            return user;
-            }
-            else return "You have to connect";
-        },transformer);
+            if (connexion) {
+                User user = userRepository.getUserByMail(request.queryParams("email"));
+                return user;
+            } else return "You have to connect";
+        }, transformer);
 
         get("/user/getAllUsers/", (request, response) -> {
-            if (connexion){
-            return userRepository.getAllUsers();
-            }
-            else return "You have to connect";
-        },transformer);
+            if (connexion) {
+                return userRepository.getAllUsers();
+            } else return "You have to connect";
+        }, transformer);
 
         post("/connect/", (request, response) -> {
             try {
@@ -115,7 +115,7 @@ public class DirectoryManage {
                 );
                 if (user.getRole() == Role.ADMIN) {
                     request.session().attribute("user", user);
-                    connexion=true;
+                    connexion = true;
                     response.redirect("/user/getAllUsers/");
                 } else
                     throw new UserNotAllowedException();
