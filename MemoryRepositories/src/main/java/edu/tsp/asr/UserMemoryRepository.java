@@ -6,19 +6,27 @@ import edu.tsp.asr.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
     private Integer current_id = 0;
 
+   // @PersistenceContext(unitName="pu1")
+	//private EntityManager em;
+
+
     @Override
     public void addUser(User user) {
         user.setId(++current_id);
+        //em.persist(user);
         users.add(user);
     }
 
     @Override
     public void removeUser(User user) {
+        //em.merge(user);
+        //em.remove(user);
         users.remove(user);
     }
 
