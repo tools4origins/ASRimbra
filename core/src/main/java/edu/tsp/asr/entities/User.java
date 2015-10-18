@@ -14,6 +14,7 @@ public class User implements Serializable {
     private String mail;
     private String passwordHash;
 
+    public User() {}
     public User(String mail, String password) {
         this.mail = mail;
         this.setPassword(password);
@@ -47,6 +48,10 @@ public class User implements Serializable {
     public String getMail() {
         return mail;
     }
+    public void setMail(String mail ) {
+        this.mail=mail;
+    }
+
 
     @Column(name="USER_PASSWD")
     public void setPassword(String password) {
