@@ -38,6 +38,18 @@ public class DirectoryManage {
         }
         ResponseTransformer transformer = new JsonTransformer();
         port(7654);
+        //Allow Cross-origin resource sharing
+        before(((request, response) -> {
+            response.header(
+                    "Access-Control-Allow-Origin",
+                    request.headers("Origin")
+            );
+            response.header(
+                    "Access-Control-Allow-Credentials",
+                    "true"
+            );
+        }));
+
         get("/", (rq, rs) -> {
             if (connexion)
                return userRepository.getAllUsers();
@@ -66,6 +78,7 @@ public class DirectoryManage {
             if (connexion) {
                 String email;
                 email = request.params(":email");
+                System.out.println(email);
 
                 try {
                     User user = userRepository.getUserByMail(email);
@@ -132,7 +145,7 @@ public class DirectoryManage {
 
         get("/disconnect/", (request, response) -> {
             request.session().removeAttribute("user");
-            connexion=false;
+            connexion = false;
             return "";
         }, transformer);
 
