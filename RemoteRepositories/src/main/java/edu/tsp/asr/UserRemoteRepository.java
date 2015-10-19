@@ -56,9 +56,7 @@ public class UserRemoteRepository implements UserRepository {
 
             try {
                 JSONObject userData = array.getJSONObject(i);
-                user = new User();
-                user.setId((Integer) userData.get("id"));
-                user.setMail((String) userData.get("mail"));
+                user = JSONToUser(userData);
                 users.add(user);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -79,10 +77,10 @@ public class UserRemoteRepository implements UserRepository {
     }
 
     @Override
-    public User getByCredentials(String mail, String password) throws UserNotFoundException, StorageException {
+    public User getByCredentials(String login, String password) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
-        params.put("user_mail", mail);
-        params.put("user_password", password);
+        params.put("login", login);
+        params.put("password", password);
         getRemoteObject("getByCredentials", Method.POST, params);
         return null;
     }
@@ -137,5 +135,12 @@ public class UserRemoteRepository implements UserRepository {
             e.printStackTrace();
             throw new StorageException();
         }
+    }
+
+    private User JSONToUser(JSONObject userData) throws JSONException {
+        User user = new User();
+        user.setId((Integer) userData.get("id"));
+        user.setMail((String) userData.get("mail"));
+        return user;
     }
 }

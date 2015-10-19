@@ -21,6 +21,11 @@ public class MailMemoryRepository implements MailRepository {
     }
 
     @Override
+    public List<Mail> getByUserMail(String userMail) {
+        return null;
+    }
+
+    @Override
     public Mail getByUserAndId(User user, Integer id) throws MailNotFoundException {
         return mails.stream()
                 .filter(m -> m.getId().equals(id))

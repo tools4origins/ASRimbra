@@ -59,9 +59,9 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
-    public User getByCredentials(String mail, String password) throws UserNotFoundException {
+    public User getByCredentials(String login, String password) throws UserNotFoundException {
         return users.stream()
-                .filter(u -> u.getMail().equals(mail) && u.checkPassword(password))
+                .filter(u -> u.getMail().equals(login) && u.checkPassword(password))
                 .findAny()
                 .orElseThrow(UserNotFoundException::new);
     }
