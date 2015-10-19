@@ -22,7 +22,6 @@ public class DirectoryManage {
         UserRepository userRepository = new UserMemoryRepository();
 
         // Populate repository in order to facilitate tests
-        // @todo : setAdmin() should be call directly the user
         try {
             User u = new User("guyomarc@tem-tsp.eu", "passwd");
             u.setAdmin();
@@ -58,17 +57,15 @@ public class DirectoryManage {
                 if (user.getRole() == Role.ADMIN) {
                     request.session().attribute("user", user);
                     response.redirect("/user/getAll/");
-                } else
+                } else {
                     throw new UserNotAllowedException();
-
-                return "";
+                }
             } catch (UserNotFoundException e) {
                 halt(403, "Bad credentials :(");
-                return "";
             } catch (UserNotAllowedException e) {
                 halt(403, "Not allowed :(");
-                return "";
             }
+            return null;
         }, transformer);
 
         before("/user/*", (request, response) -> {
@@ -83,7 +80,7 @@ public class DirectoryManage {
             return userRepository.getAll();
         }, transformer);
 
-        post("/user/add/", (request, response) -> {
+        post("/user/add", (request, response) -> {
             User user = new User(request.queryParams("email"), request.queryParams("password"));
             try {
                 userRepository.add(user);
@@ -99,7 +96,7 @@ public class DirectoryManage {
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
             );
-            return "";
+            return null;
         });
 
         delete("/user/removeByEmail", (request, response) -> {
@@ -113,22 +110,20 @@ public class DirectoryManage {
                 response.status(204);
             } catch (UserNotFoundException e) {
                 halt(404, "User not found");
-                return null;
             }
-            return "Removed Succefully";
-
+            return null;
         }, transformer);
 
         get("/user/getRight", (request, response) -> {
             User user = userRepository.getByMail(request.queryParams("user"));
             return user.getRole();
-
         }, transformer);
 
         post("/user/setRight", (request, response) -> {
             User user = userRepository.getByMail(request.queryParams("email"));
             user.setAdmin();
-            return "Updates Succefully";
+            response.status(204);
+            return null;
         });
 
         get("/user/getByMail", (request, response) -> {
@@ -141,12 +136,9 @@ public class DirectoryManage {
 
         get("/disconnect/", (request, response) -> {
             request.session().removeAttribute("user");
-            return "";
+            return null;
         }, transformer);
 
-        // @todo : consider using exception (spark framework style)
-        // @todo : set status code in previous code
-        // @todo : correct english typo in previous code
         // @todo : implement missing route or remove use of them (add for example)
     }
 
