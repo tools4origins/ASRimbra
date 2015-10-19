@@ -5,6 +5,8 @@ import edu.tsp.asr.exceptions.ExistingUserException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
 import edu.tsp.asr.repositories.UserRepository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,31 +14,26 @@ public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
     private Integer current_id = 0;
 
-   // @PersistenceContext(unitName="pu1")
-	//private EntityManager em;
+    @PersistenceContext(unitName="pu1")
+	private EntityManager em;
 
 
     @Override
-    public void add(User user)  {
+    public void add(User user) throws ExistingUserException {
         try{
             User u=getByMail(user.getMail());
             throw new ExistingUserException();
         }catch(UserNotFoundException e){
             user.setId(++current_id);
-            //em.persist(user);
-            users.add(user);
-        }
-        catch(ExistingUserException e){
-            user.setId(++current_id);
-            //em.persist(user);
+            em.persist(user);
             users.add(user);
         }
     }
 
     @Override
     public void remove(User user) {
-        //em.merge(user);
-        //em.remove(user);
+        em.merge(user);
+        em.remove(user);
         users.remove(user);
     }
 

@@ -22,6 +22,10 @@
             <artifactId>ASRimbra-MemoryRepositories</artifactId>
         </dependency>
         <dependency>
+            <groupId>edu.tsp.asr</groupId>
+            <artifactId>ASRimbra-MysqlRepositories</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
         </dependency>

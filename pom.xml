@@ -48,6 +48,11 @@
                 <version>0.1</version>
             </dependency>
             <dependency>
+                <groupId>edu.tsp.asr</groupId>
+                <artifactId>ASRimbra-MysqlRepositories</artifactId>
+                <version>0.1</version>
+            </dependency>
+            <dependency>
                 <groupId>com.goebl</groupId>
                 <artifactId>david-webb</artifactId>
                 <version>1.1.0</version>
@@ -64,6 +69,7 @@
         <module>core</module>
         <module>MemoryRepositories</module>
         <module>RemoteRepositories</module>
+        <module>MysqlRepositories</module>
         <module>DirectoryManager</module>
         <module>MailboxManager</module>
         <module>MailboxClient</module>

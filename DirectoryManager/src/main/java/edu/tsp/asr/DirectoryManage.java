@@ -96,13 +96,15 @@ public class DirectoryManage {
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
             );
-            return null;
+            return "";
+
         });
 
         delete("/user/removeByEmail", (request, response) -> {
             String email;
             email = request.queryParams("email");
             System.out.println(email);
+            System.out.println(request.queryParams());
 
             try {
                 User user = userRepository.getByMail(email);
@@ -111,7 +113,7 @@ public class DirectoryManage {
             } catch (UserNotFoundException e) {
                 halt(404, "User not found");
             }
-            return null;
+            return "";
         }, transformer);
 
         get("/user/getRight", (request, response) -> {

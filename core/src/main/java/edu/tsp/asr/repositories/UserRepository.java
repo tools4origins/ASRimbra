@@ -8,6 +8,7 @@ import edu.tsp.asr.exceptions.UserNotFoundException;
 import java.util.List;
 
 public interface UserRepository {
+
     void add(User user) throws StorageException, ExistingUserException;
 
     void remove(User user) throws UserNotFoundException, StorageException;

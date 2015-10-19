@@ -25,7 +25,7 @@ public class UserMysqlRepository implements UserRepository {
             throw new ExistingUserException();
         }catch(UserNotFoundException e){
             user.setId(++current_id);
-          //  em.persist(user);
+            em.persist(user);
             users.add(user);
         }
     }
