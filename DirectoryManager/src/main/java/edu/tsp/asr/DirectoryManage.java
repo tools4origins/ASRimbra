@@ -19,7 +19,7 @@ public class DirectoryManage {
     static ResponseTransformer transformer = new JsonTransformer();
     // @todo : forms used on client should be in the same page
     public static void main(String[] a) {
-        UserRepository userRepository = new UserMemoryRepository();
+        UserRepository userRepository = new UserMysqlRepository();
 
         // Populate repository in order to facilitate tests
         try {
