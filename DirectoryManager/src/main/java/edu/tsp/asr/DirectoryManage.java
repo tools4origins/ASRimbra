@@ -27,9 +27,7 @@ public class DirectoryManage {
             u.setAdmin();
             userRepository.add(u);
             userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
-        } catch (StorageException e) {
-            e.printStackTrace();
-        } catch (ExistingUserException e) {
+        } catch (StorageException | ExistingUserException e) {
             e.printStackTrace();
         }
 
@@ -65,7 +63,7 @@ public class DirectoryManage {
             } catch (UserNotAllowedException e) {
                 halt(403, "Not allowed :(");
             }
-            return null;
+            return "";
         }, transformer);
 
         before("/user/*", (request, response) -> {
@@ -91,19 +89,18 @@ public class DirectoryManage {
         });
 
         // @todo: refactor to generalise
-        options("/user/removeByEmail", (request, response) -> {
+        options("/user/removeByEmail/:email", (request, response) -> {
             response.header(
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
             );
-            return null;
+            response.status(200);
+            return "";
         });
 
-        delete("/user/removeByEmail", (request, response) -> {
-            String email;
-            email = request.queryParams("email");
+        delete("/user/removeByEmail/:email", (request, response) -> {
+            String email = request.params(":email");
             System.out.println(email);
-
             try {
                 User user = userRepository.getByMail(email);
                 userRepository.remove(user);
@@ -111,7 +108,7 @@ public class DirectoryManage {
             } catch (UserNotFoundException e) {
                 halt(404, "User not found");
             }
-            return null;
+            return "";
         }, transformer);
 
         get("/user/getRight", (request, response) -> {
@@ -123,7 +120,7 @@ public class DirectoryManage {
             User user = userRepository.getByMail(request.queryParams("email"));
             user.setAdmin();
             response.status(204);
-            return null;
+            return "";
         });
 
         get("/user/getByMail", (request, response) -> {
@@ -136,7 +133,7 @@ public class DirectoryManage {
 
         get("/disconnect/", (request, response) -> {
             request.session().removeAttribute("user");
-            return null;
+            return "";
         }, transformer);
 
         // @todo : implement missing route or remove use of them (add for example)
