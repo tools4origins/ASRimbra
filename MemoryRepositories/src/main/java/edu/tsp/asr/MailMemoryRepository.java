@@ -14,14 +14,14 @@ public class MailMemoryRepository implements MailRepository {
     private Integer current_id = 0;
 
     @Override
-    public List<Mail> getMailByUser(User user) {
+    public List<Mail> getByUser(User user) {
         return mails.stream()
                 .filter(m->m.getTo().equals(user.getMail()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Mail getMailByUserAndId(User user, Integer id) throws MailNotFoundException {
+    public Mail getByUserAndId(User user, Integer id) throws MailNotFoundException {
         return mails.stream()
                 .filter(m -> m.getId().equals(id))
                 .filter(m->m.getTo().equals(user.getMail()))
