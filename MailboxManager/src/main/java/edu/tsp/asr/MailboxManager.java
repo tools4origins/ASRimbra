@@ -31,6 +31,7 @@ public class MailboxManager {
         // Specifies the port listened by the DirectoryManager
         port(PORT_LISTENED);
 
+        // @todo : assert not null params
         // @todo : use config file
         // Repositories used by the applications
         UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
@@ -139,9 +140,9 @@ public class MailboxManager {
             User user = request.session().attribute("user");
 
             try {
-                assert (request.queryParams("to") != null);
-                assert (request.queryParams("title") != null);
-                assert (request.queryParams("content") != null);
+                assert request.queryParams("to") != null;
+                assert request.queryParams("title") != null;
+                assert request.queryParams("content") != null;
                 String from = user.getMail();
                 String to = request.queryParams("to");
                 String title = request.queryParams("title");
