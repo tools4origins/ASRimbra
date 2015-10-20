@@ -22,14 +22,23 @@ public class MailMemoryRepository implements MailRepository {
 
     @Override
     public List<Mail> getByUserMail(String userMail) {
-        return null;
+        return mails.stream()
+                .filter(m->m.getTo().equals(userMail))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Mail getByUserAndId(User user, Integer id) throws MailNotFoundException {
         return mails.stream()
-                .filter(m -> m.getId().equals(id))
-                .filter(m->m.getTo().equals(user.getMail()))
+                .filter(m -> m.getId().equals(id) && m.getTo().equals(user.getMail()))
+                .findAny()
+                .orElseThrow(MailNotFoundException::new);
+    }
+
+    @Override
+    public Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException {
+        return mails.stream()
+                .filter(m -> m.getId().equals(id) && m.getTo().equals(userMail))
                 .findAny()
                 .orElseThrow(MailNotFoundException::new);
     }

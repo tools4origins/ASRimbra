@@ -10,6 +10,7 @@ public interface MailRepository {
     List<Mail> getByUser(User user);
     List<Mail> getByUserMail(String userMail);
     Mail getByUserAndId(User user, Integer id) throws MailNotFoundException;
+    Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException;
     void add(Mail mail);
     void remove(Mail mail);
 }

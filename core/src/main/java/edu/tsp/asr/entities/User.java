@@ -46,6 +46,7 @@ public class User implements Serializable {
     public String getMail() {
         return mail;
     }
+
     public void setMail(String mail) {
         this.mail= mail;
     }
@@ -59,7 +60,13 @@ public class User implements Serializable {
         return new SimplePBKDF2().verifyKeyFormatted(this.passwordHash, password);
     }
 
-
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", role=" + role +
+                ", mail='" + mail + '\'' +
+                '}';
+    }
 }
 

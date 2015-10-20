@@ -1,5 +1,6 @@
 package edu.tsp.asr;
 
+import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.ExistingUserException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
@@ -7,36 +8,25 @@ import edu.tsp.asr.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
     private Integer current_id = 0;
 
-   // @PersistenceContext(unitName="pu1")
-	//private EntityManager em;
-
-
     @Override
-    public void add(User user)  {
+    public void add(User user) throws ExistingUserException {
         try{
-            User u=getByMail(user.getMail());
+            User u = getByMail(user.getMail());
             throw new ExistingUserException();
-        }catch(UserNotFoundException e){
+        } catch(UserNotFoundException e) {
             user.setId(++current_id);
-            //em.persist(user);
-            users.add(user);
-        }
-        catch(ExistingUserException e){
-            user.setId(++current_id);
-            //em.persist(user);
             users.add(user);
         }
     }
 
     @Override
     public void remove(User user) {
-        //em.merge(user);
-        //em.remove(user);
         users.remove(user);
     }
 
@@ -59,10 +49,13 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
-    public User getByCredentials(String login, String password) throws UserNotFoundException {
+    public Optional<Role> getRoleByCredentials(String login, String password) {
+        users.stream()
+                .forEach(u -> System.out.println(u.getMail() + " vs " + login + " & " + u.checkPassword(password)));
+
         return users.stream()
                 .filter(u -> u.getMail().equals(login) && u.checkPassword(password))
-                .findAny()
-                .orElseThrow(UserNotFoundException::new);
+                .map(User::getRole)
+                .findAny();
     }
 }

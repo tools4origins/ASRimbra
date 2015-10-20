@@ -2,6 +2,7 @@ package edu.tsp.asr;
 
 import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.MailingList;
+import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
@@ -18,23 +19,25 @@ import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
 import static spark.Spark.options;
+import static spark.Spark.port;
 import static spark.Spark.post;
 
 public class MailboxManager {
-    public static void main(String[] a) {
-        System.out.println("Mailbox");
-        // @todo: connect via token so it is no longer necessary to use sticky session or to login twice for admin
-        // Format : username/expiration date/signature
+    private static final ResponseTransformer transformer = new JsonTransformer();
+    private static final String TOKEN_COOKIE_NAME = "token";
+    private static final Integer PORT_LISTENED = 4567;
 
+    public static void main(String[] a) {
+        // Specifies the port listened by the DirectoryManager
+        port(PORT_LISTENED);
 
         // @todo : use config file
-        // config
+        // Repositories used by the applications
         UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
         MailRepository mailRepository = new MailMemoryRepository();
         MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
-        ResponseTransformer transformer = new JsonTransformer();
 
-        // Populate repositories for tests
+        // Populate repository in order to facilitate tests
         mailRepository.add(
                 new Mail(
                         "guyomarc@tem-tsp.eu",
@@ -53,7 +56,7 @@ public class MailboxManager {
         );
 
         //Allow Cross-origin resource sharing
-        before(((request, response) -> {
+        before((request, response) -> {
             response.header(
                     "Access-Control-Allow-Origin",
                     request.headers("Origin")
@@ -62,57 +65,52 @@ public class MailboxManager {
                     "Access-Control-Allow-Credentials",
                     "true"
             );
-        }));
+        });
 
-        post("/connect/", (request, response) -> {
-            try {
-                User user = userRepository.getByCredentials(
-                        request.queryParams("mail"),
-                        request.queryParams("password")
-                );
-                request.session().attribute("user", user);
-                response.redirect("/mailbox/");
+        post("/connect", (request, response) -> {
+            Optional<Role> opt = userRepository.getRoleByCredentials(
+                    request.queryParams("mail"),
+                    request.queryParams("password")
+            );
+            if (opt.isPresent()) {
+                response.cookie(TOKEN_COOKIE_NAME, TokenManager.get(request.queryParams("mail")));
                 return "";
-            } catch (UserNotFoundException e) {
+            } else {
                 halt(403, "Bad credentials :(");
                 return "";
             }
         }, transformer);
 
         before("/mailbox/*", (request, response) -> {
-            User user = userRepository.getByMail("guyomarc@tem-tsp.eu");
-            request.session().attribute("user", user);
-            if (request.session().attribute("user") == null) {
+            String token = request.cookie(TOKEN_COOKIE_NAME);
+            if (!TokenManager.checkToken(token)) {
                 halt(401, "You are not logged in :(");
             }
         });
 
         get("/mailbox/", (request, response) -> {
-            User user = request.session().attribute("user");
-            return mailRepository.getByUser(user);
+            String userMail = TokenManager.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
+            System.out.println("userMail");
+            System.out.println(userMail);
+            return mailRepository.getByUserMail(userMail);
         }, transformer);
 
-
         get("/mailbox/disconnect/", (request, response) -> {
-            request.session().removeAttribute("user");
+            response.removeCookie(TOKEN_COOKIE_NAME);
             return "";
         }, transformer);
 
         get("/mailbox/:id", (request, response) -> {
-            User user = request.session().attribute("user");
-
-            Integer id = 0;
             try {
-                id = Integer.parseInt(request.params(":id"));
-            } catch (NumberFormatException e) {
-                halt(400, "id is not a number");
-            }
-
-            try {
-                return mailRepository.getByUserAndId(user, id);
+                Integer id = Integer.parseInt(request.params(":id"));
+                String userMail = TokenManager.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
+                return mailRepository.getByUserMailAndId(userMail, id);
             } catch (MailNotFoundException e) {
                 halt(404, "Mail not found");
-                return null;
+                return "";
+            } catch (NumberFormatException e) {
+                halt(400, "id is not a number");
+                return "";
             }
         }, transformer);
 
@@ -173,6 +171,5 @@ public class MailboxManager {
                 return null;
             }
         }, transformer);
-        // @todo : lot of todo on directory manager are good for this class too
     }
 }
