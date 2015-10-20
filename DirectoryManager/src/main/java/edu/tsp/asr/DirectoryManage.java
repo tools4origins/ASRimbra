@@ -10,15 +10,23 @@ import edu.tsp.asr.repositories.UserRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
-
-import java.util.List;
+import java.util.Optional;
 
 import static spark.Spark.*;
 
 public class DirectoryManage {
-    static ResponseTransformer transformer = new JsonTransformer();
+
+    private static final ResponseTransformer transformer = new JsonTransformer();
+    private static final String TOKEN_COOKIE_NAME = "token";
+    private static final Integer PORT_LISTENED = 7654;
+
+    // @todo : create gateway
     // @todo : forms used on client should be in the same page
     public static void main(String[] a) {
+        // Specifies the port listened by the DirectoryManager
+        port(PORT_LISTENED);
+
+        // Repositories used by the applications
         UserRepository userRepository = new UserMysqlRepository();
 
         // Populate repository in order to facilitate tests
@@ -27,14 +35,9 @@ public class DirectoryManage {
             u.setAdmin();
             userRepository.add(u);
             userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
-        } catch (StorageException e) {
-            e.printStackTrace();
-        } catch (ExistingUserException e) {
+        } catch (StorageException | ExistingUserException e) {
             e.printStackTrace();
         }
-
-        // Specifies the port listened by the DirectoryManager
-        port(7654);
 
         //Allow Cross-origin resource sharing
         before(((request, response) -> {
@@ -48,34 +51,34 @@ public class DirectoryManage {
             );
         }));
 
-        post("/connect/", (request, response) -> {
+        post("/connect", (request, response) -> {
             try {
-                User user = userRepository.getByCredentials(
+                Optional<Role> role = userRepository.getRoleByCredentials(
                         request.queryParams("mail"),
                         request.queryParams("password")
                 );
-                if (user.getRole() == Role.ADMIN) {
-                    request.session().attribute("user", user);
-                    response.redirect("/user/getAll/");
-                } else {
+
+                if (!role.isPresent()) {
+                    throw new UserNotFoundException();
+                } else if (role.get() != Role.ADMIN) {
                     throw new UserNotAllowedException();
                 }
+                response.cookie(TOKEN_COOKIE_NAME, TokenManager.get(request.queryParams("mail")));
             } catch (UserNotFoundException e) {
                 halt(403, "Bad credentials :(");
             } catch (UserNotAllowedException e) {
                 halt(403, "Not allowed :(");
             }
-            return null;
+            return "";
         }, transformer);
-
+/*
         before("/user/*", (request, response) -> {
-            List<User> users = userRepository.getAll();
-            request.session().attribute("user", users.get(0));
-            if (request.session().attribute("user") == null) {
+            String token = request.cookie(TOKEN_COOKIE_NAME);
+            if (!TokenManager.checkToken(token)) {
                 halt(401, "You are not logged in :(");
             }
         });
-
+*/
         get("/", (request, response) -> {
             return userRepository.getAll();
         }, transformer);
@@ -91,7 +94,7 @@ public class DirectoryManage {
         });
 
         // @todo: refactor to generalise
-        options("/user/removeByEmail", (request, response) -> {
+        options("/user/removeByEmail/:email", (request, response) -> {
             response.header(
                     "Access-Control-Allow-Methods",
                     "DELETE, OPTIONS"
@@ -103,9 +106,6 @@ public class DirectoryManage {
         delete("/user/removeByEmail", (request, response) -> {
             String email;
             email = request.queryParams("email");
-            System.out.println(email);
-            System.out.println(request.queryParams());
-
             try {
                 User user = userRepository.getByMail(email);
                 userRepository.remove(user);
@@ -125,7 +125,7 @@ public class DirectoryManage {
             User user = userRepository.getByMail(request.queryParams("email"));
             user.setAdmin();
             response.status(204);
-            return null;
+            return "";
         });
 
         get("/user/getByMail", (request, response) -> {
@@ -136,12 +136,13 @@ public class DirectoryManage {
             return userRepository.getAll();
         }, transformer);
 
-        get("/disconnect/", (request, response) -> {
-            request.session().removeAttribute("user");
-            return null;
+        get("/user/getRoleByCredentials", (request, response) -> {
+            return userRepository.getRoleByCredentials(request.queryParams("login"), request.queryParams("password"));
         }, transformer);
 
-        // @todo : implement missing route or remove use of them (add for example)
+        get("/disconnect", (request, response) -> {
+            response.removeCookie(TOKEN_COOKIE_NAME);
+            return "";
+        }, transformer);
     }
-
 }
