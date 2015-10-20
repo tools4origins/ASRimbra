@@ -34,5 +34,55 @@
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>5.0.2.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>com.goebl</groupId>
+            <artifactId>david-webb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+        </dependency>
     </dependencies>
+
+
+    <profiles>
+        <profile>
+            <id>h2-tcp-db</id>
+            <properties>
+                <jdbc.url>jdbc:h2:tcp://localhost/~/test_db;MODE=Oracle</jdbc.url>
+                <jdbc.driver>org.h2.Driver</jdbc.driver>
+                <jdbc.username>sa</jdbc.username>
+                <jdbc.password></jdbc.password>
+                <jdbc.format_sql>false</jdbc.format_sql>
+                <jdbc.show_sql>false</jdbc.show_sql>
+                <jdbc.hbm2ddl.auto>create</jdbc.hbm2ddl.auto>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>h2-inmemory-db</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <jdbc.url>jdbc:h2:mem:test_db;MODE=Oracle;DB_CLOSE_ON_EXIT=FALSE</jdbc.url>
+                <jdbc.driver>org.h2.Driver</jdbc.driver>
+                <jdbc.username>sa</jdbc.username>
+                <jdbc.password></jdbc.password>
+                <jdbc.format_sql>false</jdbc.format_sql>
+                <jdbc.show_sql>false</jdbc.show_sql>
+                <jdbc.hbm2ddl.auto>create-drop</jdbc.hbm2ddl.auto>
+            </properties>
+        </profile>
+    </profiles>
 </project>

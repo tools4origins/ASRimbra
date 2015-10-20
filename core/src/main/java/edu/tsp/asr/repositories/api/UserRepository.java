@@ -1,4 +1,4 @@
-package edu.tsp.asr.repositories;
+package edu.tsp.asr.repositories.api;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;

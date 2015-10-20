@@ -1,15 +1,15 @@
-package edu.tsp.asr;
+package edu.tsp.asr.repositories.memory;
 
 import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
-import edu.tsp.asr.repositories.MailRepository;
+import edu.tsp.asr.repositories.api.MailRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MailMysqlRepository implements MailRepository {
+public class MailMemoryRepository implements MailRepository {
     private ArrayList<Mail> mails = new ArrayList<>();
     private Integer current_id = 0;
 
@@ -21,10 +21,24 @@ public class MailMysqlRepository implements MailRepository {
     }
 
     @Override
+    public List<Mail> getByUserMail(String userMail) {
+        return mails.stream()
+                .filter(m->m.getTo().equals(userMail))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Mail getByUserAndId(User user, Integer id) throws MailNotFoundException {
         return mails.stream()
-                .filter(m -> m.getId().equals(id))
-                .filter(m->m.getTo().equals(user.getMail()))
+                .filter(m -> m.getId().equals(id) && m.getTo().equals(user.getMail()))
+                .findAny()
+                .orElseThrow(MailNotFoundException::new);
+    }
+
+    @Override
+    public Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException {
+        return mails.stream()
+                .filter(m -> m.getId().equals(id) && m.getTo().equals(userMail))
                 .findAny()
                 .orElseThrow(MailNotFoundException::new);
     }

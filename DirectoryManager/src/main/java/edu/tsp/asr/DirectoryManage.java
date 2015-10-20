@@ -6,7 +6,9 @@ import edu.tsp.asr.exceptions.ExistingUserException;
 import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.exceptions.UserNotAllowedException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
-import edu.tsp.asr.repositories.UserRepository;
+import edu.tsp.asr.repositories.api.UserRepository;
+import edu.tsp.asr.repositories.jpa.UserJPARepository;
+import edu.tsp.asr.repositories.memory.UserMemoryRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
@@ -27,7 +29,7 @@ public class DirectoryManage {
         port(PORT_LISTENED);
 
         // Repositories used by the applications
-        UserRepository userRepository = new UserMysqlRepository();
+        UserRepository userRepository = new UserJPARepository();
 
         // Populate repository in order to facilitate tests
         try {
@@ -90,7 +92,7 @@ public class DirectoryManage {
             } catch (ExistingUserException e) {
                 halt(400, "User already exist");
             }
-            return user.getId();
+            return "";
         });
 
         // @todo: refactor to generalise
@@ -100,7 +102,6 @@ public class DirectoryManage {
                     "DELETE, OPTIONS"
             );
             return "";
-
         });
 
         delete("/user/removeByEmail", (request, response) -> {

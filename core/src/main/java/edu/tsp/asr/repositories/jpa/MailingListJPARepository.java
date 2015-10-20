@@ -1,12 +1,12 @@
-package edu.tsp.asr;
+package edu.tsp.asr.repositories.jpa;
 
 import edu.tsp.asr.entities.MailingList;
-import edu.tsp.asr.repositories.MailingListRepository;
+import edu.tsp.asr.repositories.api.MailingListRepository;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class MailingListMemoryRepository implements MailingListRepository {
+public class MailingListJPARepository implements MailingListRepository {
     private ArrayList<MailingList> mailingLists = new ArrayList<>();
     private Integer current_id = 0;
 

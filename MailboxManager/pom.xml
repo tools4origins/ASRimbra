@@ -18,14 +18,6 @@
             <artifactId>ASRimbra-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>edu.tsp.asr</groupId>
-            <artifactId>ASRimbra-MemoryRepositories</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>edu.tsp.asr</groupId>
-            <artifactId>ASRimbra-RemoteRepositories</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
         </dependency>

@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
 
-@Entity
 public class Mail implements Serializable {
     private Integer id;
     private String from;
@@ -13,15 +12,15 @@ public class Mail implements Serializable {
     private String title;
     private String content;
 
+    public Mail() { }
+
     public Mail(String from, String to, String title, String content) {
         this.from = from;
         this.to = to;
         this.title = title;
         this.content = content;
     }
-    @Id
 
-	@Column(name="MAIL_ID")
     public Integer getId() {
         return id;
     }
@@ -30,7 +29,6 @@ public class Mail implements Serializable {
         this.id = id;
     }
 
-	@Column(name="MAIL_FROM")
     public String getFrom() {
         return from;
     }
@@ -39,7 +37,6 @@ public class Mail implements Serializable {
         this.from = from;
     }
 
-    @Column(name="MAIL_TO")
     public String getTo() {
         return to;
     }
@@ -48,7 +45,6 @@ public class Mail implements Serializable {
         this.to = to;
     }
 
-    @Column(name="MAIL_TITLE")
     public String getTitle() {
         return title;
     }
@@ -57,7 +53,6 @@ public class Mail implements Serializable {
         this.title = title;
     }
 
-    @Column(name="MAIL_CONTENT")
     public String getContent() {
         return content;
     }

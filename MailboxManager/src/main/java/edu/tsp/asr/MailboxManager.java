@@ -5,10 +5,12 @@ import edu.tsp.asr.entities.MailingList;
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
-import edu.tsp.asr.exceptions.UserNotFoundException;
-import edu.tsp.asr.repositories.MailRepository;
-import edu.tsp.asr.repositories.MailingListRepository;
-import edu.tsp.asr.repositories.UserRepository;
+import edu.tsp.asr.repositories.api.MailRepository;
+import edu.tsp.asr.repositories.api.MailingListRepository;
+import edu.tsp.asr.repositories.api.UserRepository;
+import edu.tsp.asr.repositories.memory.MailMemoryRepository;
+import edu.tsp.asr.repositories.memory.MailingListMemoryRepository;
+import edu.tsp.asr.repositories.remote.UserRemoteRepository;
 import edu.tsp.asr.transformers.JsonTransformer;
 import spark.ResponseTransformer;
 
@@ -82,6 +84,11 @@ public class MailboxManager {
             }
         }, transformer);
 
+        get("/disconnect", (request, response) -> {
+            response.removeCookie(TOKEN_COOKIE_NAME);
+            return "";
+        }, transformer);
+
         before("/mailbox/*", (request, response) -> {
             String token = request.cookie(TOKEN_COOKIE_NAME);
             if (!TokenManager.checkToken(token)) {
@@ -96,10 +103,6 @@ public class MailboxManager {
             return mailRepository.getByUserMail(userMail);
         }, transformer);
 
-        get("/mailbox/disconnect/", (request, response) -> {
-            response.removeCookie(TOKEN_COOKIE_NAME);
-            return "";
-        }, transformer);
 
         get("/mailbox/:id", (request, response) -> {
             try {

@@ -1,20 +1,17 @@
-package edu.tsp.asr;
+package edu.tsp.asr.repositories.memory;
 
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.ExistingUserException;
 import edu.tsp.asr.exceptions.UserNotFoundException;
-import edu.tsp.asr.repositories.UserRepository;
+import edu.tsp.asr.repositories.api.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class UserMemoryRepository implements UserRepository {
     private ArrayList<User> users = new ArrayList<>();
-    private Integer current_id = 0;
 
     @Override
     public void add(User user) throws ExistingUserException {
@@ -22,7 +19,6 @@ public class UserMemoryRepository implements UserRepository {
             User u = getByMail(user.getMail());
             throw new ExistingUserException();
         } catch(UserNotFoundException e) {
-            user.setId(++current_id);
             users.add(user);
         }
     }
