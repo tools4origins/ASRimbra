@@ -55,7 +55,22 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>edu.tsp.asr.MailboxManager</mainClass>
+                    <mainClass>edu.tsp.asr.asrimbra.MailboxManager</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Build an executable JAR -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <mainClass>edu.tsp.asr.asrimbra.MailboxManager</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

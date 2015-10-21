@@ -56,7 +56,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>edu.tsp.asr.DirectoryManage</mainClass>
+                    <mainClass>edu.tsp.asr.asrimbra.DirectoryManage</mainClass>
                 </configuration>
             </plugin>
         </plugins>
