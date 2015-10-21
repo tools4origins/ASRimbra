@@ -5,6 +5,7 @@ import edu.tsp.asr.entities.MailingList;
 import edu.tsp.asr.entities.Role;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
+import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.repositories.api.MailRepository;
 import edu.tsp.asr.repositories.api.MailingListRepository;
 import edu.tsp.asr.repositories.api.UserRepository;
@@ -41,22 +42,26 @@ public class MailboxManager {
         MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
 
         // Populate repository in order to facilitate tests
-        mailRepository.add(
-                new Mail(
-                        "guyomarc@tem-tsp.eu",
-                        "atilalla@tem-tsp.eu",
-                        "title",
-                        "content"
-                )
-        );
-        mailRepository.add(
-                new Mail(
-                        "atilalla@tem-tsp.eu",
-                        "guyomarc@tem-tsp.eu",
-                        "title2",
-                        "content2"
-                )
-        );
+        try {
+            mailRepository.add(
+                    new Mail(
+                            "guyomarc@tem-tsp.eu",
+                            "atilalla@tem-tsp.eu",
+                            "title",
+                            "content"
+                    )
+            );
+            mailRepository.add(
+                    new Mail(
+                            "atilalla@tem-tsp.eu",
+                            "guyomarc@tem-tsp.eu",
+                            "title2",
+                            "content2"
+                    )
+            );
+        } catch (StorageException e) {
+            e.printStackTrace();
+        }
 
         //Allow Cross-origin resource sharing
         before((request, response) -> {
@@ -153,12 +158,12 @@ public class MailboxManager {
                 Mail newMail;
 
                 // Check if the mail is sent to a mailing list
-                Optional<MailingList> optional = mailingListMemoryRepository.getByAddress(to);
-                if (optional.isPresent()) {
+                Optional<MailingList> maybeMailingList = mailingListMemoryRepository.getByAddress(to);
+                if (maybeMailingList.isPresent()) {
                     // if so, we forward it directly to all of its subscribers
-                    MailingList mailingList = optional.get();
+                    MailingList mailingList = maybeMailingList.get();
                     for (User subscriber : mailingList.getSubscribers()) {
-                        // variable to is here the mailingList address
+                        // variable "to" is the mailingList address
                         newMail = new Mail(to, subscriber.getMail(), title, content);
                         mailRepository.add(newMail);
                     }

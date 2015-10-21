@@ -18,7 +18,10 @@
         <property name="hibernate.connection.username">adm_csc5002_6</property>
         <property name="hibernate.connection.password">Monday11October</property>
 
+        <!-- Automatically drop and re-create the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">create</property>
+
         <!-- List of XML mapping files -->
-        <mapping resource="META-INF/User.hbm.xml"/>
+        <mapping resource="META-INF/Mail.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>

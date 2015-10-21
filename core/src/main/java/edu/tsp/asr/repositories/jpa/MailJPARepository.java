@@ -3,7 +3,13 @@ package edu.tsp.asr.repositories.jpa;
 import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
+import edu.tsp.asr.exceptions.StorageException;
 import edu.tsp.asr.repositories.api.MailRepository;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +18,16 @@ import java.util.stream.Collectors;
 public class MailJPARepository implements MailRepository {
     private ArrayList<Mail> mails = new ArrayList<>();
     private Integer current_id = 0;
+    private SessionFactory factory;
+
+    public MailJPARepository() {
+        try {
+            factory = new Configuration().configure("META-INF/hibernateMail.cfg.xml").buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
 
     @Override
     public List<Mail> getByUser(User user) {
@@ -40,9 +56,14 @@ public class MailJPARepository implements MailRepository {
     }
 
     @Override
-    public void add(Mail mail) {
-        mail.setId(++current_id);
-        mails.add(mail);
+    public void add(Mail mail) throws StorageException {
+        Session session = factory.openSession();
+        try {
+            session.save(mail);
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            throw new StorageException();
+        };
     }
 
     @Override

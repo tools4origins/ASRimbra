@@ -24,6 +24,8 @@ public class DirectoryManage {
 
     // @todo : create gateway
     // @todo : forms used on client should be in the same page
+    // @todo : we should use a controller
+    // @todo : deleting user should remove its mails
     public static void main(String[] a) {
         // Specifies the port listened by the DirectoryManager
         port(PORT_LISTENED);
@@ -42,7 +44,7 @@ public class DirectoryManage {
         }
 
         //Allow Cross-origin resource sharing
-        before(((request, response) -> {
+        before((request, response) -> {
             response.header(
                     "Access-Control-Allow-Origin",
                     request.headers("Origin")
@@ -51,7 +53,7 @@ public class DirectoryManage {
                     "Access-Control-Allow-Credentials",
                     "true"
             );
-        }));
+        });
 
         post("/connect", (request, response) -> {
             try {

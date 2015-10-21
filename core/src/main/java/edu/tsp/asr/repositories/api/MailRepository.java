@@ -3,6 +3,7 @@ package edu.tsp.asr.repositories.api;
 import edu.tsp.asr.entities.Mail;
 import edu.tsp.asr.entities.User;
 import edu.tsp.asr.exceptions.MailNotFoundException;
+import edu.tsp.asr.exceptions.StorageException;
 
 import java.util.List;
 
@@ -11,6 +12,6 @@ public interface MailRepository {
     List<Mail> getByUserMail(String userMail);
     Mail getByUserAndId(User user, Integer id) throws MailNotFoundException;
     Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException;
-    void add(Mail mail);
+    void add(Mail mail) throws StorageException;
     void remove(Mail mail);
 }
