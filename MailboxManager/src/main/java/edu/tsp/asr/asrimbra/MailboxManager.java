@@ -10,10 +10,12 @@ import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import edu.tsp.asr.asrimbra.repositories.api.MailingListRepository;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
-import edu.tsp.asr.asrimbra.repositories.memory.MailMemoryRepository;
-import edu.tsp.asr.asrimbra.repositories.memory.MailingListMemoryRepository;
+import edu.tsp.asr.asrimbra.repositories.jpa.MailJPARepository;
+import edu.tsp.asr.asrimbra.repositories.jpa.MailingListJPARepository;
 import edu.tsp.asr.asrimbra.repositories.remote.UserRemoteRepository;
 import edu.tsp.asr.asrimbra.transformers.JsonTransformer;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import spark.ResponseTransformer;
 
 import java.util.Optional;
@@ -22,7 +24,6 @@ import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
-import static spark.Spark.options;
 import static spark.Spark.port;
 import static spark.Spark.post;
 
@@ -30,17 +31,23 @@ public class MailboxManager {
     private static final ResponseTransformer transformer = new JsonTransformer();
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final Integer PORT_LISTENED = 4567;
+    private static final String HIBERNATE_CONFIG_FILE = "META-INF/hibernateMailboxManager.cfg.xml";
+    private static final String DIRECTORY_MANAGER_URL = "http://localhost:7654/user/";
 
     public static void main(String[] a) {
-        // Specifies the port listened by the DirectoryManager
-        port(PORT_LISTENED);
 
-        // @todo : assert not null params
-        // @todo : use config file
+        SessionFactory factory;
+        try {
+            factory = new Configuration().configure(HIBERNATE_CONFIG_FILE).buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+
         // Repositories used by the applications
-        UserRepository userRepository = new UserRemoteRepository("http://localhost:7654/user/");
-        MailRepository mailRepository = new MailMemoryRepository();
-        MailingListRepository mailingListMemoryRepository = new MailingListMemoryRepository();
+        UserRepository userRepository = new UserRemoteRepository(DIRECTORY_MANAGER_URL);
+        MailRepository mailRepository = new MailJPARepository(factory);
+        MailingListRepository mailingListMemoryRepository = new MailingListJPARepository(factory);
 
         // Populate repository in order to facilitate tests
         try {
@@ -64,6 +71,9 @@ public class MailboxManager {
             e.printStackTrace();
         }
 
+        // Specifies the port listened by the MailboxManager
+        port(PORT_LISTENED);
+
         //Allow Cross-origin resource sharing
         before((request, response) -> {
             response.header(
@@ -77,10 +87,13 @@ public class MailboxManager {
         });
 
         post("/connect", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail", "password");
+
             Optional<Role> opt = userRepository.getRoleByCredentials(
                     request.queryParams("mail"),
                     request.queryParams("password")
             );
+
             if (opt.isPresent()) {
                 response.cookie(TOKEN_COOKIE_NAME, TokenManager.get(request.queryParams("mail")));
                 return "";
@@ -104,8 +117,6 @@ public class MailboxManager {
 
         get("/mailbox/", (request, response) -> {
             String userMail = TokenManager.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
-            System.out.println("userMail");
-            System.out.println(userMail);
             return mailRepository.getByUserMail(userMail);
         }, transformer);
 
@@ -125,60 +136,44 @@ public class MailboxManager {
         }, transformer);
 
         delete("/mailbox/:id", (request, response) -> {
-            User user = request.session().attribute("user");
-
             Integer id = 0;
             try {
                 id = Integer.parseInt(request.params(":id"));
+                String userMail = TokenManager.extractUserName(request.cookie("token"));
+                mailRepository.removeByUserMailAndId(userMail, id);
+                response.status(204);
             } catch (NumberFormatException e) {
                 halt(400, "id is not a number");
             }
-
-            try {
-                Mail mail = mailRepository.getByUserAndId(user, id);
-                mailRepository.remove(mail);
-                response.status(204);
-                return null;
-            } catch (MailNotFoundException e) {
-                halt(404, "Mail not found");
-                return null;
-            }
+            response.status(202); // No garanty of success.
+            return "";
         }, transformer);
 
         post("/mailbox/send/", (request, response) -> {
-            User user = request.session().attribute("user");
+            SparkHelper.checkQueryParamsNullity(request, "to", "title", "content");
 
-            try {
-                assert request.queryParams("to") != null;
-                assert request.queryParams("title") != null;
-                assert request.queryParams("content") != null;
-                String from = user.getMail();
-                String to = request.queryParams("to");
-                String title = request.queryParams("title");
-                String content = request.queryParams("content");
-                Mail newMail;
+            String from = TokenManager.extractUserName(request.cookie("token"));
+            String to = request.queryParams("to");
+            String title = request.queryParams("title");
+            String content = request.queryParams("content");
+            Mail newMail;
 
-                // Check if the mail is sent to a mailing list
-                Optional<MailingList> maybeMailingList = mailingListMemoryRepository.getByAddress(to);
-                if (maybeMailingList.isPresent()) {
-                    // if so, we forward it directly to all of its subscribers
-                    MailingList mailingList = maybeMailingList.get();
-                    for (User subscriber : mailingList.getSubscribers()) {
-                        // variable "to" is the mailingList address
-                        newMail = new Mail(to, subscriber.getMail(), title, content);
-                        mailRepository.add(newMail);
-                    }
-                    return mailingList.getSubscribers().size();
-                } else {
-                    // else we consider that it is a normal mail
-                    newMail = new Mail(from, to, title, content);
+            // Check if the mail is sent to a mailing list
+            Optional<MailingList> maybeMailingList = mailingListMemoryRepository.getByAddress(to);
+            if (maybeMailingList.isPresent()) {
+                // if so, we forward it directly to all of its subscribers
+                MailingList mailingList = maybeMailingList.get();
+                for (String subscriberMail : mailingList.getSubscribersMails()) {
+                    // variable "to" is the mailingList address
+                    newMail = new Mail(to, subscriberMail, title, content);
                     mailRepository.add(newMail);
-                    return newMail.getId();
                 }
-
-            } catch (NullPointerException e) {
-                halt(400, "Bad parameters");
-                return null;
+                return mailingList.getSubscribersMails().size();
+            } else {
+                // else we consider that it is a normal mail
+                newMail = new Mail(from, to, title, content);
+                mailRepository.add(newMail);
+                return newMail.getId();
             }
         }, transformer);
     }

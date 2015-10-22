@@ -19,13 +19,8 @@ import java.util.Optional;
 public class UserJPARepository implements UserRepository {
     private SessionFactory factory;
 
-    public UserJPARepository(String configFilePath) {
-      try {
-         factory = new Configuration().configure(configFilePath).buildSessionFactory();
-      } catch (Throwable ex) {
-         System.err.println("Failed to create sessionFactory object." + ex);
-         throw new ExceptionInInitializerError(ex);
-      }
+    public UserJPARepository(SessionFactory factory) {
+         this.factory = factory;
     }
 
     @Override
@@ -36,19 +31,7 @@ public class UserJPARepository implements UserRepository {
             session.save(user);
             tx.commit();
         } catch (HibernateException e) {
-            handleHibernateException(e, tx);
-        }
-    }
-
-    @Override
-    public void remove(User user) throws StorageException {
-        Transaction tx = null;
-        try (Session session = factory.openSession()) {
-            tx = session.beginTransaction();
-            session.delete(user);
-            tx.commit();
-        } catch (HibernateException e) {
-            handleHibernateException(e, tx);
+            JPAHelper.handleHibernateException(e, tx);
         }
     }
 
@@ -63,12 +46,12 @@ public class UserJPARepository implements UserRepository {
             q.executeUpdate();
             tx.commit();
         } catch (HibernateException e) {
-            handleHibernateException(e, tx);
+            JPAHelper.handleHibernateException(e, tx);
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked") // Criteria.list() signature says it returns a List, not a List<User>
+    @SuppressWarnings("unchecked") // Criteria.list() signature generate warning
     public List<User> getAll() throws StorageException {
         Session session = factory.openSession();
         List<User> users;
@@ -121,17 +104,5 @@ public class UserJPARepository implements UserRepository {
         }
 
         return Optional.ofNullable(role);
-    }
-
-    private void handleHibernateException(HibernateException e, Transaction tx) throws StorageException {
-        if (tx != null) {
-            tx.rollback();
-        }
-        handleHibernateException(e);
-    }
-
-    private void handleHibernateException(HibernateException e) throws StorageException {
-        e.printStackTrace();
-        throw new StorageException();
     }
 }

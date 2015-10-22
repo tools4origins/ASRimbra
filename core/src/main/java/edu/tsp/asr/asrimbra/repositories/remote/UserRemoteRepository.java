@@ -29,7 +29,6 @@ import static com.goebl.david.Request.Method.*;
  */
 public class UserRemoteRepository implements UserRepository {
     private String baseURI;
-    // @todo : consider using a socket instead of a rest interface
     public UserRemoteRepository(String baseURI) {
         this.baseURI = baseURI;
     }
@@ -42,10 +41,6 @@ public class UserRemoteRepository implements UserRepository {
         // @todo : test if no exceptions
     }
 
-    @Override
-    public void remove(User user) throws UserNotFoundException, StorageException {
-        removeByMail(user.getMail());
-    }
 
     @Override
     public void removeByMail(String mail) throws UserNotFoundException, StorageException {

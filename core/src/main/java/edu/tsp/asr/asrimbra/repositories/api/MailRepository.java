@@ -8,10 +8,8 @@ import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import java.util.List;
 
 public interface MailRepository {
-    List<Mail> getByUser(User user);
-    List<Mail> getByUserMail(String userMail);
-    Mail getByUserAndId(User user, Integer id) throws MailNotFoundException;
-    Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException;
+    List<Mail> getByUserMail(String userMail) throws StorageException;
+    Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException, StorageException;
     void add(Mail mail) throws StorageException;
-    void remove(Mail mail);
+    void removeByUserMailAndId(String userMail, Integer id) throws StorageException;
 }

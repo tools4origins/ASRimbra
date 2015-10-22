@@ -9,45 +9,49 @@ import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
 import edu.tsp.asr.asrimbra.repositories.jpa.UserJPARepository;
 import edu.tsp.asr.asrimbra.transformers.JsonTransformer;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import spark.ResponseTransformer;
 
 import java.util.Optional;
 
 import static spark.Spark.*;
 
-public class DirectoryManage {
+public class DirectoryManager {
 
     private static final ResponseTransformer transformer = new JsonTransformer();
     private static final String TOKEN_COOKIE_NAME = "token";
     private static final Integer PORT_LISTENED = 7654;
+    private static final String HIBERNATE_CONFIG_FILE = "META-INF/hibernateDirectoryManager.cfg.xml";
 
     // @todo : create gateway
     // @todo : forms used on client should be in the same page
-    // @todo : we should use a controller
     // @todo : deleting user should remove its mails
     public static void main(String[] a) {
         // Specifies the port listened by the DirectoryManager
         port(PORT_LISTENED);
 
         // Repositories used by the applications
-        UserRepository userRepository = new UserJPARepository("META-INF/hibernateUser.cfg.xml");
+        SessionFactory factory;
+        try {
+            factory = new Configuration().configure(HIBERNATE_CONFIG_FILE).buildSessionFactory();
+        } catch (Throwable ex) {
+            System.err.println("Failed to create sessionFactory object." + ex);
+            throw new ExceptionInInitializerError(ex);
+        }
+        UserRepository userRepository = new UserJPARepository(factory);
 
         // Populate repository in order to facilitate tests
-        System.out.println("Initialization of server...");
         try {
             User u = new User("guyomarc@tem-tsp.eu", "passwd");
             u.setAdmin();
             userRepository.add(u);
             userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
-            System.out.println("users:");
-            System.out.println(userRepository.getAll());
         } catch (StorageException | ExistingUserException e) {
-            System.out.println("error");
             e.printStackTrace();
         }
 
-
-        //Allow Cross-origin resource sharing
+        // Allow Cross-origin resource sharing
         before((request, response) -> {
             response.header(
                     "Access-Control-Allow-Origin",
@@ -60,6 +64,8 @@ public class DirectoryManage {
         });
 
         post("/connect", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail", "password");
+
             try {
                 Optional<Role> role = userRepository.getRoleByCredentials(
                         request.queryParams("mail"),
@@ -87,12 +93,11 @@ public class DirectoryManage {
             }
         });
 */
-        get("/", (request, response) -> {
-            return userRepository.getAll();
-        }, transformer);
 
         post("/user/add", (request, response) -> {
-            User user = new User(request.queryParams("email"), request.queryParams("password"));
+            SparkHelper.checkQueryParamsNullity(request, "mail", "password");
+
+            User user = new User(request.queryParams("mail"), request.queryParams("password"));
             try {
                 userRepository.add(user);
             } catch (ExistingUserException e) {
@@ -101,21 +106,14 @@ public class DirectoryManage {
             return "";
         });
 
-        // @todo: refactor to generalise
-        options("/user/removeByEmail/:email", (request, response) -> {
-            response.header(
-                    "Access-Control-Allow-Methods",
-                    "DELETE, OPTIONS"
-            );
-            return "";
-        });
+        options("/user/removeByMail/:mail", SparkHelper.generateOptionRoute("DELETE"));
 
-        delete("/user/removeByEmail", (request, response) -> {
-            String email;
-            email = request.queryParams("email");
+        delete("/user/removeByMail/:mail", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail");
+
+            String userMail = request.queryParams("mail");
             try {
-                User user = userRepository.getByMail(email);
-                userRepository.remove(user);
+                userRepository.removeByMail(userMail);
                 response.status(204);
             } catch (UserNotFoundException e) {
                 halt(404, "User not found");
@@ -124,18 +122,21 @@ public class DirectoryManage {
         }, transformer);
 
         get("/user/getRight", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "user");
             User user = userRepository.getByMail(request.queryParams("user"));
             return user.getRole();
         }, transformer);
 
         post("/user/setRight", (request, response) -> {
-            User user = userRepository.getByMail(request.queryParams("email"));
+            SparkHelper.checkQueryParamsNullity(request, "mail");
+            User user = userRepository.getByMail(request.queryParams("mail"));
             user.setAdmin();
             response.status(204);
             return "";
         });
 
         get("/user/getByMail", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail");
             return userRepository.getByMail(request.queryParams("email"));
         }, transformer);
 
@@ -144,6 +145,7 @@ public class DirectoryManage {
         }, transformer);
 
         get("/user/getRoleByCredentials", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "login", "password");
             return userRepository.getRoleByCredentials(request.queryParams("login"), request.queryParams("password"));
         }, transformer);
 

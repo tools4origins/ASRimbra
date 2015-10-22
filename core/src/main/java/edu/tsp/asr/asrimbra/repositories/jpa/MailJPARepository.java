@@ -4,70 +4,87 @@ import edu.tsp.asr.asrimbra.entities.Mail;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
+import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.criterion.Restrictions;
 
+import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MailJPARepository implements MailRepository {
-    private ArrayList<Mail> mails = new ArrayList<>();
-    private Integer current_id = 0;
     private SessionFactory factory;
 
-    public MailJPARepository() {
+    public MailJPARepository(SessionFactory factory) {
+        this.factory = factory;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // Criteria.list() signature generate warning
+    public List<Mail> getByUserMail(String userMail) throws StorageException {
+        Session session = factory.openSession();
+        List<Mail> mails;
         try {
-            factory = new Configuration().configure("META-INF/hibernateMail.cfg.xml").buildSessionFactory();
-        } catch (Throwable ex) {
-            System.err.println("Failed to create sessionFactory object." + ex);
-            throw new ExceptionInInitializerError(ex);
+            mails = session.createCriteria(Mail.class)
+                    .add(Restrictions.eq("user", userMail))
+                    .list();
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            throw new StorageException();
+        }
+        return mails;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked") // Criteria.list() signature generate warning
+    public Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException, StorageException {
+        Session session = factory.openSession();
+        Mail mail;
+        try {
+            mail = session.get(Mail.class, id);
+            if(mail != null && (mail.getFrom().equals(userMail) || mail.getTo().equals(userMail))) {
+                return mail;
+            } else {
+                throw new MailNotFoundException();
+            }
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            throw new StorageException();
         }
     }
 
     @Override
-    public List<Mail> getByUser(User user) {
-        return this.getByUserMail(user.getMail());
-    }
-
-    @Override
-    public List<Mail> getByUserMail(String userMail) {
-        return mails.stream()
-                .filter(m->m.getTo().equals(userMail))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Mail getByUserAndId(User user, Integer id) throws MailNotFoundException {
-        return mails.stream()
-                .filter(m -> m.getId().equals(id))
-                .filter(m->m.getTo().equals(user.getMail()))
-                .findAny()
-                .orElseThrow(MailNotFoundException::new);
-    }
-
-    @Override
-    public Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException {
-        return null;
-    }
-
-    @Override
     public void add(Mail mail) throws StorageException {
-        Session session = factory.openSession();
-        try {
+        Transaction tx = null;
+        try (Session session = factory.openSession()) {
+            tx = session.beginTransaction();
             session.save(mail);
+            tx.commit();
         } catch (HibernateException e) {
-            e.printStackTrace();
-            throw new StorageException();
-        };
+            JPAHelper.handleHibernateException(e, tx);
+        }
     }
 
     @Override
-    public void remove(Mail mail) {
-        mails.remove(mail);
+    public void removeByUserMailAndId(String userMail, Integer id) throws StorageException {
+        Transaction tx = null;
+        try (Session session = factory.openSession()) {
+            tx = session.beginTransaction();
+            Query q = session
+                    .createQuery("delete from " + Mail.class + " where id = :id AND (from=:userMail OR to=:userMail)")
+                    .setParameter("id", id)
+                    .setParameter("userMail", userMail);
+            q.executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            JPAHelper.handleHibernateException(e, tx);
+        }
     }
 }

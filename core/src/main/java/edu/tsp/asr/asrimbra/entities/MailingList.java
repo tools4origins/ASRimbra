@@ -5,19 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MailingList implements Serializable {
-    private Integer id;
-    private List<User> subscribers = new ArrayList<>();
     private String address;
 
-    public MailingList() { }
+    private List<String> subscribersMails = new ArrayList<>();
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    public MailingList(String address) { this.address = address; }
 
     public String getAddress() {
         return address;
@@ -27,16 +19,19 @@ public class MailingList implements Serializable {
         this.address = address;
     }
 
-    public List<User> getSubscribers() {
-        return subscribers;
+    public List<String> getSubscribersMails() {
+        return subscribersMails;
     }
 
-    public void removeSubscribers(User user) {
-        subscribers.remove(user);
+    public void addSubscriberMail(String subscriberMail) {
+        this.subscribersMails.add(subscriberMail);
     }
 
-    public void addSubscribers(User subscriber) {
-        this.subscribers.add(subscriber);
+    public void removeSubscriberMail(String subscriberMail) {
+        this.subscribersMails.remove(subscriberMail);
     }
 
+    public void setSubscribersMails(List<String> subscribersMails) {
+        this.subscribersMails = subscribersMails;
+    }
 }

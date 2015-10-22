@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="edu.tsp.asr.asrimbra.entities.MailingList" table="MailingList">
+        <id name="address" column="address" type="string"/>
+        <list name="subscribersMails"
+             table="MailingList_subscribers">
+            <key column="address"/>
+            <list-index column="sortOrder" />
+            <element column="subscriber" type="string"/>
+        </list>
+    </class>
+</hibernate-mapping>

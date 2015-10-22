@@ -24,13 +24,8 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
-    public void remove(User user) {
-        users.remove(user);
-    }
-
-    @Override
     public void removeByMail(String mail) throws UserNotFoundException {
-        remove(getByMail(mail));
+        users.remove(getByMail(mail));
     }
 
     @Override

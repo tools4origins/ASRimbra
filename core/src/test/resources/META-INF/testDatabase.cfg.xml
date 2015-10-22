@@ -13,15 +13,17 @@
 
         <!-- Assume test is the database name -->
         <property name="hibernate.connection.url">
-            jdbc:mysql://www-inf.it-sudparis.eu:3306/CSC5002_5
+            jdbc:mysql://www-inf.it-sudparis.eu:3306/CSC5002_7
         </property>
-        <property name="hibernate.connection.username">adm_csc5002_5</property>
+        <property name="hibernate.connection.username">adm_csc5002_7</property>
         <property name="hibernate.connection.password">Monday11October</property>
 
         <!-- Automatically drop and re-create the database schema on startup -->
         <property name="hibernate.hbm2ddl.auto">create</property>
 
         <!-- List of XML mapping files -->
+        <mapping resource="META-INF/User.hbm.xml"/>
         <mapping resource="META-INF/Mail.hbm.xml"/>
+        <mapping resource="META-INF/MailingList.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>

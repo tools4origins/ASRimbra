@@ -9,12 +9,9 @@ import java.util.Optional;
 
 public class MailingListMemoryRepository implements MailingListRepository {
     private ArrayList<MailingList> mailingLists = new ArrayList<>();
-    private Integer current_id = 0;
-
 
     @Override
     public void add(MailingList mailingList) {
-        mailingList.setId(++current_id);
         mailingLists.add(mailingList);
     }
 
