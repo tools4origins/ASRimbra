@@ -28,13 +28,15 @@ import static spark.Spark.port;
 import static spark.Spark.post;
 
 public class MailboxManager {
-    private static final ResponseTransformer transformer = new JsonTransformer();
-    private static final String TOKEN_COOKIE_NAME = "token";
-    private static final Integer PORT_LISTENED = 4567;
-    private static final String HIBERNATE_CONFIG_FILE = "META-INF/hibernateMailboxManager.cfg.xml";
-    private static final String DIRECTORY_MANAGER_URL = "http://localhost:7654/user/";
+    private static ResponseTransformer transformer = new JsonTransformer();
+    private static String TOKEN_COOKIE_NAME = "token";
+    private static Integer PORT_LISTENED = 4567;
+    private static String HIBERNATE_CONFIG_FILE = "META-INF/hibernateMailboxManager.cfg.xml";
+    private static String DIRECTORY_MANAGER_URL = "http://localhost:7654/user/";
 
     public static void main(String[] a) {
+        // @todo: read config -> http://www.mkyong.com/java/java-properties-file-examples/
+
 
         SessionFactory factory;
         try {
