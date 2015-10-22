@@ -15,13 +15,16 @@ Project made for a scholar microprojet
 
 ## Configuration
 
-@todo : add info / token, db, repo, (cluster ?)
+You can configure ASRimbra behavior using config.properties
 
 ## Installation
 You need to have maven and Java JDK 1.8+ installed on your computer first.
 
 Download the dependencies, run tests and install modules with maven :
 > `mvn install`
+
+It will be faster not to run tests:
+> `mvn install -DskipTests`
 
 To package DirectoryManager use, *in its subfolder*:
 
@@ -45,8 +48,17 @@ or directly with java, wherever you want:
 @todo : fix this
 ## Infrastructure
 
-We have a nice infrastructure ! It may be slightly more evolved that what was requested,
-have a look to ./ASRimbra_architecture.png :-).
+We have a nice infrastructure !
+
+You can find the basic infrastructure at ./ASRimbra_architecture.png
+
+Some choice were made to improve scalability, software evolution and consistency.
+
+Why do we believe than our choices were goods ? Because anyone can do this without having to
+touch the code:
+./ASRimbra_architecture_rev.png
+
+See more at section
 
 ### Clients
 Both ManagerClient and AdministrationClient are web clients. They can be resume to a single static web page having forms
@@ -59,7 +71,7 @@ the browser will soon remember your parameters).
     * It works in local without dependencies
     * It works on a server.
     * It is static ! Nothing is easier to cache.
-    * It works if it is saved from a server (Ctrl + S on the page and TADA ! You have really save the client,
+    * It works if it is saved from a server (Ctrl + S on the page and TADA ! You have really save the edu.tsp.asr.asrimbra.client,
     not just a generated file without any logic)
     * It is easy to create an software from it : it just need to be wrapped in a WebView
     * It is easy to create a mobile application from it : it just need to be wrapped in a WebView (eg : with Cordova)
@@ -95,15 +107,15 @@ it is a problem with a time to live for the cookie of 1 hour.
 
 #### REST API
 
-DirectoryManager base URI is `http://server:7654`
+DirectoryManager default base URI is `http://server:7654`
 
 Following routes are supported by DirectoryManager :
 
- > POST "/connect" — Return a token (after identity check) in a cookie — Query parameters are "mail" and "password"
- >
  > GET "/user/getAll" — List all users
  >
- > POST "/user/add" — Add a user from a mail and a password — Query parameters are "mail", "password"
+ > POST "/user/addByCredentials" — Add a user from a mail and a password — Query parameters are "mail", "password"
+ >
+ > POST "/user/add" — Add a user from a mail, a passwordHash and a role — Query parameters are "mail", "passwordHash" and "role"
  >
  > OPTIONS "/user/removeByMail/:mail" — Return the available options for this route
  >
@@ -125,7 +137,7 @@ If the route is prefixed by user/, then you have to be authenticated as an Admin
 
 Following routes are supported by MailboxManager :
 
-MailboxManager base url is `server:4567`
+MailboxManager default base url is `server:4567`
 
 > POST "/connect" — Return a token (after identity check) in a cookie — Query parameters are "mail" and "password"
 >
@@ -171,12 +183,59 @@ during development and may be usefull again in certains case (eg tests).
 * RemoteRepositories allow access to a distant server which has to implement a corresponding REST API. It is used for
 the communications from MailboxManager to DirectoryManager.
 
+RemoteRepositories are basically a **proxy** for a remote repository. It uses**synchronous call.**Since in all
+cases the responses is need to go further in the algorithm, asynchronous/buffered messages/inversion of control/etc
+would not have been really useful.
+
 @todo : reload javadoc
 
-Nginx, cluster, load balancing en round robin
+## Distributed ASRimbra
+Our goal is to have this:
+./ASRimbra_architecture_rev.png
 
-@todo: monitoring
-@todo: remove useless gzip compression
+The most important point is that we do not need to change our code : some configurations
+may not be compatible with this (eg: use of MemoryRepositiories), but the basic one is.
+
+### How-to
+#### Add a ningx server
+Reverse proxy must be accessible from the outside and access to alls internal servers (requires multiple
+network interface (see `Deploy servers`), may be usefull to create it in a VM).
+
+We use a nginx server to act as a ReverseProxy, LoadBalancer and Firewall.
+
+You can use another server but nginx is very well suited for those tasks.
+
+You need to create 3 entries in site-availables (and enable them):
+* `dir-man.yourdomain.com`
+* `mail-man.yourdomain.com`
+* `dir-api.yourdomain.com`
+
+dir-api.yourdomain.com MUST only be accessible from dir-man.yourdomain.com and mail-man.yourdomain.com servers
+addresses.
+
+See documentation for having multiple sites and multiple server by sites.
+
+You can choose between several load balancing algorithm but round robin should work fine in most cases.
+
+Note that it can also be used as a content deliver for clients: As said below, clients are static files and nginx
+is very, very good to deliver static files.
+
+#### Deploy servers
+All your servers must be in a private LAN.
+Change config.properties so that they use your new urls.
+
+#### Change DNS configuration
+You need to create as many entries in your DNS server as there is in :
+ * dir-man.yourdomain.com
+ * mail-man.yourdomain.com
+ * dir-api.yourdomain.com
+All of them must redirect to your nginx server.
+
+Note that dir-api.yourdomain.com DNS configuration should not be accessible from anywhere else that
+dir-man.yourdomain.com and mail-man.yourdomain.com. You may want to add it directly to /etc/hosts instead.
+
+#### And... Voilà !
+Nothing else to do, just launch the edu.tsp.asr.asrimbra.client and it works if previous steps were made correctly.
 
 ## Understanding the code
 #### Java 8
@@ -202,7 +261,6 @@ Information are defined in core/src/main/resources/hibernate*.cfg.xml
 
 * Tutorial for using hibernate and POJO: http://www.tutorialspoint.com/hibernate/index.htm
 
-@todo: move all config to ASRimbra/pom.xml
 #### DavidWebb
 
 ASRimbra use DavidWebb, a lightweight Java HTTP-Client for calling JSON REST-Services.
@@ -216,11 +274,5 @@ ASRimbra use a PBKDF2 by rtner.de to calculate hash of sensitive information. Mo
 
 * More on PBKDF2: https://en.wikipedia.org/wiki/PBKDF2
 * More on this implementation: http://www.rtner.de/software/PBKDF2.html
-
-
-
-
-
-
 
 

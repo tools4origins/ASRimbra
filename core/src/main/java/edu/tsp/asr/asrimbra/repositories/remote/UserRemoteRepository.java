@@ -4,6 +4,7 @@ import com.goebl.david.Request;
 import com.goebl.david.Request.Method;
 import com.goebl.david.Webb;
 import com.goebl.david.WebbException;
+import com.google.gson.JsonObject;
 import edu.tsp.asr.asrimbra.JSONHelper;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
@@ -36,8 +37,10 @@ public class UserRemoteRepository implements UserRepository {
     @Override
     public void add(User user) throws StorageException {
         Map<String, Object> params = new HashMap<>();
-        params.put("user", user);
-        JSONObject obj = getRemoteObject("add", Method.POST, params);
+        params.put("mail", user.getMail());
+        params.put("passwordHash", user.getPasswordHash());
+        params.put("role", user.getRole());
+        getRemoteString("add", Method.POST, params);
         // @todo : test if no exceptions
     }
 
@@ -45,7 +48,7 @@ public class UserRemoteRepository implements UserRepository {
     @Override
     public void removeByMail(String mail) throws StorageException {
         Map<String, Object> params = new HashMap<>();
-        getRemoteObject("user/removeByMail/" + mail, Method.DELETE, params);
+        getRemoteObject("removeByMail/" + mail, Method.DELETE, params);
         // @todo : test if no exceptions
     }
 
@@ -64,6 +67,7 @@ public class UserRemoteRepository implements UserRepository {
                 user = JSONHelper.JSONToUser(userData);
                 users.add(user);
             } catch (JSONException e) {
+                System.out.println("Unable to parse JSON");
                 e.printStackTrace();
                 throw new StorageException();
             }
@@ -77,7 +81,7 @@ public class UserRemoteRepository implements UserRepository {
     @Override
     public User getByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
-        params.put("user_mail", mail);
+        params.put("mail", mail);
         getRemoteObject("getByMail", Method.GET, params);
         return null;
     }
@@ -98,6 +102,25 @@ public class UserRemoteRepository implements UserRepository {
         } catch (JSONException | IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public void setAdmin(String mail) throws UserNotFoundException, StorageException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("mail", mail);
+        getRemoteString("setAdmin", Method.POST, params);
+    }
+
+    @Override
+    public void setSimpleUser(String mail) throws UserNotFoundException, StorageException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("mail", mail);
+        getRemoteString("setSimpleUser", Method.POST, params);
+    }
+
+    public void empty() throws StorageException {
+        Map<String, Object> params = new HashMap<>();
+        getRemoteString("empty", Method.GET, params);
     }
 
     private Request generateRequest(String URI, Method method, Map<String, Object> params) throws StorageException {
@@ -121,6 +144,7 @@ public class UserRemoteRepository implements UserRepository {
                     throw new MethodNotAllowedException();
             }
         } catch (MethodNotAllowedException e) {
+            System.out.println(method + " not allowed on " + baseURI+URI);
             throw new StorageException();
         }
 
@@ -151,8 +175,18 @@ public class UserRemoteRepository implements UserRepository {
         }
     }
 
+    private String getRemoteString(String URI, Method method, Map<String, Object> params) throws StorageException {
+        try {
+            Request request = generateRequest(URI, method, params);
+            return request.asString().getBody();
+        } catch (WebbException e) {
+            handleWebbException(e, URI, method);
+        }
+        return null;
+    }
+
     private JSONArray handleWebbException(WebbException e, String URI, Method method) throws StorageException {
-        System.out.println(method + " on " + URI + " did not worked");
+        System.out.println(method + " on " + baseURI + URI + " did not worked");
         e.printStackTrace();
         throw new StorageException();
     }

@@ -30,12 +30,10 @@ public class MailboxManager {
     private static String TOKEN_COOKIE_NAME = "token";
     private static Integer PORT_LISTENED = 4567;
     private static String HIBERNATE_CONFIG_FILE = "META-INF/hibernateMailboxManager.cfg.xml";
-    private static String DIRECTORY_MANAGER_URL = "http://localhost:7654/user/";
+    private static String DIRECTORY_MANAGER_URL = "http://localhost:7654";
 
     public static void main(String[] a) {
         // @todo: read config -> http://www.mkyong.com/java/java-properties-file-examples/
-
-
         SessionFactory factory;
         try {
             factory = new Configuration().configure(HIBERNATE_CONFIG_FILE).buildSessionFactory();

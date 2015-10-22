@@ -80,6 +80,7 @@ public class UserJPARepository implements UserRepository {
             e.printStackTrace();
             throw new StorageException();
         }
+        System.out.println("e");
 
         if(user == null) {
             throw new UserNotFoundException();
@@ -110,5 +111,37 @@ public class UserJPARepository implements UserRepository {
         }
 
         return Optional.ofNullable(role);
+    }
+
+    //@todo: improve me
+    @Override
+    public void setAdmin(String mail) throws StorageException {
+        Transaction tx = null;
+        try (Session session = factory.openSession()) {
+            tx = session.beginTransaction();
+            Query q = session
+                    .createQuery("update User set role='ADMIN' where mail = :mail")
+                    .setParameter("mail", mail);
+            q.executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            JPAHelper.handleHibernateException(e, tx);
+        }
+    }
+
+    //@todo: improve me
+    @Override
+    public void setSimpleUser(String mail) throws StorageException {
+        Transaction tx = null;
+        try (Session session = factory.openSession()) {
+            tx = session.beginTransaction();
+            Query q = session
+                    .createQuery("update User set role='USER' where mail = :mail")
+                    .setParameter("mail", mail);
+            q.executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            JPAHelper.handleHibernateException(e, tx);
+        }
     }
 }

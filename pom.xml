@@ -88,8 +88,6 @@
         <module>core</module>
         <module>DirectoryManager</module>
         <module>MailboxManager</module>
-        <module>MailboxClient</module>
-        <module>AdministrationClient</module>
     </modules>
 
     <build>

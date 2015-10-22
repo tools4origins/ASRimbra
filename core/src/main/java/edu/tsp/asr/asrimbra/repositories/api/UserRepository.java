@@ -21,4 +21,8 @@ public interface UserRepository {
     User getByMail(String mail) throws UserNotFoundException, StorageException;
 
     Optional<Role> getRoleByCredentials(String login, String password) throws StorageException;
+
+    void setAdmin(String mail) throws UserNotFoundException, StorageException;
+
+    void setSimpleUser(String mail) throws UserNotFoundException, StorageException;
 }

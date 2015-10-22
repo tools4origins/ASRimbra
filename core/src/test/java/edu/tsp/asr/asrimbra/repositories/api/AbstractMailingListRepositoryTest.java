@@ -20,13 +20,13 @@ public abstract class AbstractMailingListRepositoryTest {
     public void setUp() throws Exception {
         mailingListRepository = createMailingListRepository();
     }
-
+/*
     @Test(expected = ExistingMailingListException.class)
     public void addShouldThrowIfAddressAlreadyUsed() throws Exception {
         // @todo: implement and test
         throw new ExistingMailingListException();
     }
-
+*/
     @Test
     public void getByAddressShouldReturnEmptyOptionalIfMailingListDoesNotExist() throws Exception {
         assertThat(mailingListRepository.getByAddress(ADDRESS1).isPresent()).isFalse();

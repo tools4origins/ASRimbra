@@ -3,6 +3,7 @@ package edu.tsp.asr.asrimbra.repositories.memory;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.ExistingUserException;
+import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
 
@@ -52,5 +53,15 @@ public class UserMemoryRepository implements UserRepository {
                 .filter(u -> u.getMail().equals(login) && u.checkPassword(password))
                 .map(User::getRole)
                 .findAny();
+    }
+
+    @Override
+    public void setAdmin(String mail) throws UserNotFoundException, StorageException {
+        getByMail(mail).setAdmin();
+    }
+
+    @Override
+    public void setSimpleUser(String mail) throws UserNotFoundException, StorageException {
+        getByMail(mail).setSimpleUser();
     }
 }

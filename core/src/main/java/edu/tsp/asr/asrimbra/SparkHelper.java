@@ -10,7 +10,9 @@ public class SparkHelper {
     public static void checkQueryParamsNullity(Request request, String... params) {
         for (String paramName : params) {
             if(request.queryParams(paramName)==null) {
-                halt(400, "Bad parameters, "+paramName+" must not be null");
+                String errorMessage = "Bad parameters, "+paramName+" must not be null";
+                System.out.println(errorMessage);
+                halt(400, errorMessage);
                 return;
             }
         }

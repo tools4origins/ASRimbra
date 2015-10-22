@@ -4,17 +4,14 @@ import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.ExistingUserException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
-import edu.tsp.asr.asrimbra.exceptions.UserNotAllowedException;
-import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
 import edu.tsp.asr.asrimbra.repositories.jpa.UserJPARepository;
 import edu.tsp.asr.asrimbra.transformers.JsonTransformer;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.json.JSONObject;
 import spark.ResponseTransformer;
 
-import java.util.Optional;
+import java.util.List;
 
 import static spark.Spark.before;
 import static spark.Spark.delete;
@@ -27,12 +24,11 @@ import static spark.Spark.post;
 public class DirectoryManager {
 
     private static final ResponseTransformer transformer = new JsonTransformer();
-    private static final String TOKEN_COOKIE_NAME = "token";
     private static final Integer PORT_LISTENED = 7654;
     private static final String HIBERNATE_CONFIG_FILE = "META-INF/hibernateDirectoryManager.cfg.xml";
 
-    // @todo : create gateway
-    // @todo : forms used on client should be in the same page
+    // @todo : forms used on edu.tsp.asr.asrimbra.client should be in the same page
+    // @todo: merge forms, all should use mail and not email.
     // @todo : deleting user should remove its mails
     public static void main(String[] a) {
         // Specifies the port listened by the DirectoryManager
@@ -70,38 +66,7 @@ public class DirectoryManager {
             );
         });
 
-        post("/connect", (request, response) -> {
-            SparkHelper.checkQueryParamsNullity(request, "mail", "password");
-
-            try {
-                Optional<Role> role = userRepository.getRoleByCredentials(
-                        request.queryParams("mail"),
-                        request.queryParams("password")
-                );
-
-                if (!role.isPresent()) {
-                    throw new UserNotFoundException();
-                } else if (role.get() != Role.ADMIN) {
-                    throw new UserNotAllowedException();
-                }
-                response.cookie(TOKEN_COOKIE_NAME, TokenManager.get(request.queryParams("mail")));
-            } catch (UserNotFoundException e) {
-                halt(403, "Bad credentials :(");
-            } catch (UserNotAllowedException e) {
-                halt(403, "Not allowed :(");
-            }
-            return "";
-        }, transformer);
-/*
-        before("/user/*", (request, response) -> {
-            String token = request.cookie(TOKEN_COOKIE_NAME);
-            if (!TokenManager.checkToken(token)) {
-                halt(401, "You are not logged in :(");
-            }
-        });
-*/
-
-        post("/user/add", (request, response) -> {
+        post("/user/addByCredentials", (request, response) -> {
             SparkHelper.checkQueryParamsNullity(request, "mail", "password");
 
             User user = new User(request.queryParams("mail"), request.queryParams("password"));
@@ -111,27 +76,27 @@ public class DirectoryManager {
                 halt(400, "User already exist");
             }
             return "";
-        });
+        }, transformer);
 
         post("/user/add", (request, response) -> {
-            SparkHelper.checkQueryParamsNullity(request, "user");
-
-            JSONObject jsonUser = new JSONObject(request.queryParams("user"));
-            User user = JSONHelper.JSONToUser(jsonUser);
+            SparkHelper.checkQueryParamsNullity(request, "mail", "passwordHash", "role");
 
             try {
+                User user = new User();
+                user.setMail(request.queryParams("mail"));
+                user.setPasswordHash(request.queryParams("passwordHash"));
+                user.setRole(Role.valueOf(request.queryParams("role")));
                 userRepository.add(user);
             } catch (ExistingUserException e) {
-                halt(400, "User already exist");
+                halt(402, "User already exist");
             }
+
             return "";
-        });
+        }, transformer);
 
         options("/user/removeByMail/:mail", SparkHelper.generateOptionRoute("DELETE"));
 
         delete("/user/removeByMail/:mail", (request, response) -> {
-            SparkHelper.checkQueryParamsNullity(request, "mail");
-
             String userMail = request.queryParams("mail");
             userRepository.removeByMail(userMail);
             response.status(202);
@@ -139,26 +104,48 @@ public class DirectoryManager {
         }, transformer);
 
         get("/user/getRight", (request, response) -> {
-            SparkHelper.checkQueryParamsNullity(request, "user");
-            User user = userRepository.getByMail(request.queryParams("user"));
+            SparkHelper.checkQueryParamsNullity(request, "mail");
+            User user = userRepository.getByMail(request.queryParams("mail"));
             return user.getRole();
         }, transformer);
 
-        post("/user/setRight", (request, response) -> {
+        post("/user/setAdmin", (request, response) -> {
             SparkHelper.checkQueryParamsNullity(request, "mail");
-            User user = userRepository.getByMail(request.queryParams("mail"));
-            user.setAdmin();
+            userRepository.setAdmin(request.queryParams("mail"));
+            response.status(204);
+            return "";
+        });
+
+        post("/user/setSimpleUser", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail");
+            userRepository.setSimpleUser(request.queryParams("mail"));
             response.status(204);
             return "";
         });
 
         get("/user/getByMail", (request, response) -> {
+            System.out.println("a");
             SparkHelper.checkQueryParamsNullity(request, "mail");
-            return userRepository.getByMail(request.queryParams("email"));
+            System.out.println("b");
+            return userRepository.getByMail(request.queryParams("mail"));
         }, transformer);
 
         get("/user/getAll", (request, response) -> {
             return userRepository.getAll();
+        }, transformer);
+
+        // facilitate tests, should be removed in prod since it is quite dangerous
+        get("/user/empty", (request, response) -> {
+            List<User> users = userRepository.getAll();
+            users.stream()
+                    .forEach(u -> {
+                        try {
+                            userRepository.removeByMail(u.getMail());
+                        } catch (StorageException e) {
+                            e.printStackTrace();
+                        }
+                    });
+            return "";
         }, transformer);
 
         get("/user/getRoleByCredentials", (request, response) -> {
@@ -166,9 +153,5 @@ public class DirectoryManager {
             return userRepository.getRoleByCredentials(request.queryParams("login"), request.queryParams("password"));
         }, transformer);
 
-        get("/disconnect", (request, response) -> {
-            response.removeCookie(TOKEN_COOKIE_NAME);
-            return "";
-        }, transformer);
     }
 }
