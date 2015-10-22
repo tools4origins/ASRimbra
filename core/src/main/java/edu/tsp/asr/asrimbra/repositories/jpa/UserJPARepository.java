@@ -1,5 +1,6 @@
 package edu.tsp.asr.asrimbra.repositories.jpa;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.ExistingUserException;
@@ -11,7 +12,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,17 +31,23 @@ public class UserJPARepository implements UserRepository {
             session.save(user);
             tx.commit();
         } catch (HibernateException e) {
-            JPAHelper.handleHibernateException(e, tx);
+            if(e.getCause() instanceof MySQLIntegrityConstraintViolationException) {
+                // @todo: could be another constraint, improve check
+                throw new ExistingUserException();
+            } else {
+                JPAHelper.handleHibernateException(e, tx);
+            }
+
         }
     }
 
     @Override
-    public void removeByMail(String mail) throws UserNotFoundException, StorageException {
+    public void removeByMail(String mail) throws StorageException {
         Transaction tx = null;
         try (Session session = factory.openSession()) {
             tx = session.beginTransaction();
             Query q = session
-                    .createQuery("delete from " + User.class + " where mail = :mail")
+                    .createQuery("delete from User where mail = :mail")
                     .setParameter("mail", mail);
             q.executeUpdate();
             tx.commit();

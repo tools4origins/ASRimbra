@@ -1,8 +1,6 @@
 package edu.tsp.asr.asrimbra.repositories.jpa;
 
-import edu.tsp.asr.asrimbra.repositories.api.AbstractMailRepositoryTest;
 import edu.tsp.asr.asrimbra.repositories.api.AbstractMailingListRepositoryTest;
-import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import edu.tsp.asr.asrimbra.repositories.api.MailingListRepository;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;

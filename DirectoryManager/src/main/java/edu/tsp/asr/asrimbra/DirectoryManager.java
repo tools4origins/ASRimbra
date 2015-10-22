@@ -11,11 +11,18 @@ import edu.tsp.asr.asrimbra.repositories.jpa.UserJPARepository;
 import edu.tsp.asr.asrimbra.transformers.JsonTransformer;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.json.JSONObject;
 import spark.ResponseTransformer;
 
 import java.util.Optional;
 
-import static spark.Spark.*;
+import static spark.Spark.before;
+import static spark.Spark.delete;
+import static spark.Spark.get;
+import static spark.Spark.halt;
+import static spark.Spark.options;
+import static spark.Spark.port;
+import static spark.Spark.post;
 
 public class DirectoryManager {
 
@@ -106,18 +113,28 @@ public class DirectoryManager {
             return "";
         });
 
+        post("/user/add", (request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "user");
+
+            JSONObject jsonUser = new JSONObject(request.queryParams("user"));
+            User user = JSONHelper.JSONToUser(jsonUser);
+
+            try {
+                userRepository.add(user);
+            } catch (ExistingUserException e) {
+                halt(400, "User already exist");
+            }
+            return "";
+        });
+
         options("/user/removeByMail/:mail", SparkHelper.generateOptionRoute("DELETE"));
 
         delete("/user/removeByMail/:mail", (request, response) -> {
             SparkHelper.checkQueryParamsNullity(request, "mail");
 
             String userMail = request.queryParams("mail");
-            try {
-                userRepository.removeByMail(userMail);
-                response.status(204);
-            } catch (UserNotFoundException e) {
-                halt(404, "User not found");
-            }
+            userRepository.removeByMail(userMail);
+            response.status(202);
             return "";
         }, transformer);
 

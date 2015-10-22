@@ -3,10 +3,8 @@ package edu.tsp.asr.asrimbra;
 import edu.tsp.asr.asrimbra.entities.Mail;
 import edu.tsp.asr.asrimbra.entities.MailingList;
 import edu.tsp.asr.asrimbra.entities.Role;
-import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
-
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import edu.tsp.asr.asrimbra.repositories.api.MailingListRepository;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;

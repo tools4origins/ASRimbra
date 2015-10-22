@@ -1,23 +1,17 @@
 package edu.tsp.asr.asrimbra.repositories.jpa;
 
 import edu.tsp.asr.asrimbra.entities.Mail;
-import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
-import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Restrictions;
 
-import javax.mail.internet.InternetAddress;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MailJPARepository implements MailRepository {
     private SessionFactory factory;
@@ -33,8 +27,10 @@ public class MailJPARepository implements MailRepository {
         List<Mail> mails;
         try {
             mails = session.createCriteria(Mail.class)
-                    .add(Restrictions.eq("user", userMail))
-                    .list();
+                    .add(Restrictions.or(
+                            Restrictions.eq("from", userMail),
+                            Restrictions.eq("to", userMail)
+                    )).list();
         } catch (HibernateException e) {
             e.printStackTrace();
             throw new StorageException();
@@ -78,9 +74,10 @@ public class MailJPARepository implements MailRepository {
         try (Session session = factory.openSession()) {
             tx = session.beginTransaction();
             Query q = session
-                    .createQuery("delete from " + Mail.class + " where id = :id AND (from=:userMail OR to=:userMail)")
+                    .createSQLQuery("delete from Mail where id = :id AND (sender=:from OR recipient=:to)")
                     .setParameter("id", id)
-                    .setParameter("userMail", userMail);
+                    .setParameter("from", userMail)
+                    .setParameter("to", userMail);
             q.executeUpdate();
             tx.commit();
         } catch (HibernateException e) {

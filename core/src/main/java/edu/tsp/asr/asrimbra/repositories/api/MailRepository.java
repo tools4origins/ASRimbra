@@ -1,7 +1,6 @@
 package edu.tsp.asr.asrimbra.repositories.api;
 
 import edu.tsp.asr.asrimbra.entities.Mail;
-import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
 

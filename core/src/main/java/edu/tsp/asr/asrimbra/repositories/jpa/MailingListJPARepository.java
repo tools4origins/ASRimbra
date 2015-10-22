@@ -1,17 +1,13 @@
 package edu.tsp.asr.asrimbra.repositories.jpa;
 
 import edu.tsp.asr.asrimbra.entities.MailingList;
-import edu.tsp.asr.asrimbra.entities.Role;
-import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
-import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.MailingListRepository;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 public class MailingListJPARepository implements MailingListRepository {

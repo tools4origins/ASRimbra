@@ -16,7 +16,7 @@ public class UserMemoryRepository implements UserRepository {
     @Override
     public void add(User user) throws ExistingUserException {
         try{
-            User u = getByMail(user.getMail());
+            getByMail(user.getMail());
             throw new ExistingUserException();
         } catch(UserNotFoundException e) {
             users.add(user);
@@ -24,8 +24,13 @@ public class UserMemoryRepository implements UserRepository {
     }
 
     @Override
-    public void removeByMail(String mail) throws UserNotFoundException {
-        users.remove(getByMail(mail));
+    public void removeByMail(String mail) {
+        try {
+            User user = getByMail(mail);
+            users.remove(user);
+        } catch (UserNotFoundException e) {
+            // we allow that
+        }
     }
 
     @Override
@@ -43,9 +48,6 @@ public class UserMemoryRepository implements UserRepository {
 
     @Override
     public Optional<Role> getRoleByCredentials(String login, String password) {
-        users.stream()
-                .forEach(u -> System.out.println(u.getMail() + " vs " + login + " & " + u.checkPassword(password)));
-
         return users.stream()
                 .filter(u -> u.getMail().equals(login) && u.checkPassword(password))
                 .map(User::getRole)

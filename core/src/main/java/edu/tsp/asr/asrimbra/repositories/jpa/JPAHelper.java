@@ -13,6 +13,7 @@ public class JPAHelper {
     }
 
     public static void handleHibernateException(HibernateException e) throws StorageException {
+        e.getCause().printStackTrace();
         e.printStackTrace();
         throw new StorageException();
     }

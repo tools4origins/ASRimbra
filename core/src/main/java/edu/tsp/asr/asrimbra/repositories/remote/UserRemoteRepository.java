@@ -4,7 +4,7 @@ import com.goebl.david.Request;
 import com.goebl.david.Request.Method;
 import com.goebl.david.Webb;
 import com.goebl.david.WebbException;
-
+import edu.tsp.asr.asrimbra.JSONHelper;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MethodNotAllowedException;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.goebl.david.Request.Method.*;
+import static com.goebl.david.Request.Method.GET;
 
 /* Repository used to remotely access to a database.
  * All necessary routes must be installed on the server which address is specified by baseURI
@@ -30,7 +30,7 @@ import static com.goebl.david.Request.Method.*;
 public class UserRemoteRepository implements UserRepository {
     private String baseURI;
     public UserRemoteRepository(String baseURI) {
-        this.baseURI = baseURI;
+        this.baseURI = baseURI + "/user/";
     }
 
     @Override
@@ -43,10 +43,9 @@ public class UserRemoteRepository implements UserRepository {
 
 
     @Override
-    public void removeByMail(String mail) throws UserNotFoundException, StorageException {
+    public void removeByMail(String mail) throws StorageException {
         Map<String, Object> params = new HashMap<>();
-        params.put("user_mail", mail);
-        getRemoteObject("removeByMail", Method.DELETE, params);
+        getRemoteObject("user/removeByMail/" + mail, Method.DELETE, params);
         // @todo : test if no exceptions
     }
 
@@ -62,7 +61,7 @@ public class UserRemoteRepository implements UserRepository {
 
             try {
                 JSONObject userData = array.getJSONObject(i);
-                user = JSONToUser(userData);
+                user = JSONHelper.JSONToUser(userData);
                 users.add(user);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -138,7 +137,7 @@ public class UserRemoteRepository implements UserRepository {
             Request request = generateRequest(URI, method, params);
             return request.asJsonArray().getBody();
         } catch (WebbException e) {
-            throw new StorageException();
+            return handleWebbException(e, URI, method);
         }
     }
 
@@ -147,13 +146,14 @@ public class UserRemoteRepository implements UserRepository {
             Request request = generateRequest(URI, method, params);
             return request.asJsonObject().getBody();
         } catch (WebbException e) {
-            throw new StorageException();
+            handleWebbException(e, URI, method);
+            return null;
         }
     }
 
-    private User JSONToUser(JSONObject userData) throws JSONException {
-        User user = new User();
-        user.setMail((String) userData.get("mail"));
-        return user;
+    private JSONArray handleWebbException(WebbException e, String URI, Method method) throws StorageException {
+        System.out.println(method + " on " + URI + " did not worked");
+        e.printStackTrace();
+        throw new StorageException();
     }
 }

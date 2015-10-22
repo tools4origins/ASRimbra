@@ -9,6 +9,8 @@ public class MailingList implements Serializable {
 
     private List<String> subscribersMails = new ArrayList<>();
 
+    public MailingList() {}
+
     public MailingList(String address) { this.address = address; }
 
     public String getAddress() {

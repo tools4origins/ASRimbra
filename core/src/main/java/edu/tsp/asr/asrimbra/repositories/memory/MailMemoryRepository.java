@@ -2,7 +2,6 @@ package edu.tsp.asr.asrimbra.repositories.memory;
 
 
 import edu.tsp.asr.asrimbra.entities.Mail;
-import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
@@ -10,7 +9,6 @@ import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class MailMemoryRepository implements MailRepository {

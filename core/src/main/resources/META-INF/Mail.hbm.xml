@@ -4,12 +4,12 @@
         "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-    <class name="edu.tsp.asr.asrimbra.entities.Mail" table="MailingList">
+    <class name="edu.tsp.asr.asrimbra.entities.Mail" table="Mail">
         <id name="id" column="id" type="int">
-            <generator class="native"/>
+            <generator class="native" />
         </id>
-        <property name="from" column="from" type="string"/>
-        <property name="to" column="to" type="string"/>
+        <property name="from" column="sender" type="string"/>
+        <property name="to" column="recipient" type="string"/>
         <property name="title" column="title" type="string"/>
         <property name="content" column="content" type="string"/>
     </class>

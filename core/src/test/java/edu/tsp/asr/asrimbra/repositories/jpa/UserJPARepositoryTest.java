@@ -1,11 +1,10 @@
 package edu.tsp.asr.asrimbra.repositories.jpa;
 
-import edu.tsp.asr.asrimbra.repositories.api.AbstractMailRepositoryTest;
 import edu.tsp.asr.asrimbra.repositories.api.AbstractUserRepositoryTest;
-import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.junit.Ignore;
 
 public class UserJPARepositoryTest extends AbstractUserRepositoryTest {
     private static final String HIBERNATE_CONFIG_FILE = "META-INF/testDatabase.cfg.xml";

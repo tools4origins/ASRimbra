@@ -20,7 +20,7 @@ Project made for a scholar microprojet
 ## Installation
 You need to have maven and Java JDK 1.8+ installed on your computer first.
 
-Download the dependencies and install apps with maven :
+Download the dependencies, run tests and install modules with maven :
 > `mvn install`
 
 To package DirectoryManager use, *in its subfolder*:
@@ -171,12 +171,7 @@ during development and may be usefull again in certains case (eg tests).
 * RemoteRepositories allow access to a distant server which has to implement a corresponding REST API. It is used for
 the communications from MailboxManager to DirectoryManager.
 
-###
-
 @todo : reload javadoc
-@todo : check number of thread used by Spark, should not be limited (most thread are waiting for network answer)
-
-Testé
 
 Nginx, cluster, load balancing en round robin
 

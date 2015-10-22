@@ -3,13 +3,9 @@ package edu.tsp.asr.asrimbra.repositories.api;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.ExistingUserException;
-import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +30,6 @@ public abstract class AbstractUserRepositoryTest {
         userRepository.add(user1);
         userRepository.add(user2);
         assertThat(userRepository.getAll()).containsOnly(user1, user2);
-
     }
 
     @Test(expected = ExistingUserException.class)
@@ -43,8 +38,8 @@ public abstract class AbstractUserRepositoryTest {
         userRepository.add(new User(ADDRESS1, PASSWORD2));
     }
 
-    @Test(expected = ExistingUserException.class)
-    public void removeByMailShouldThrowIfUserDoesNotExist() throws Exception {
+    @Test()
+    public void removeByMailShouldNotThrowIfUserDoesNotExist() throws Exception {
         userRepository.removeByMail(ADDRESS1);
     }
 
@@ -60,7 +55,7 @@ public abstract class AbstractUserRepositoryTest {
         userRepository.getByMail(ADDRESS1);
     }
 
-    @Test(expected = UserNotFoundException.class)
+    @Test
     public void getByMailShouldWork() throws Exception {
         userRepository.add(new User(ADDRESS1, PASSWORD1));
         userRepository.getByMail(ADDRESS1);

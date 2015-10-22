@@ -14,7 +14,7 @@ public interface UserRepository {
 
     void add(User user) throws StorageException, ExistingUserException;
 
-    void removeByMail(String mail) throws UserNotFoundException, StorageException;
+    void removeByMail(String mail) throws StorageException;
 
     List<User> getAll() throws StorageException;
 

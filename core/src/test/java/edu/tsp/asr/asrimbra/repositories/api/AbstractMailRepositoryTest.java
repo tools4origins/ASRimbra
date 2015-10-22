@@ -37,10 +37,6 @@ public abstract class AbstractMailRepositoryTest {
             mailRepository.add(mail1to2);
             mailRepository.add(mail3to1);
             mailRepository.add(mail3to2);
-            System.out.println("Here:");
-            mailRepository.getByUserMail(ADDRESS1).stream()
-                    .map(m -> "from: " + m.getFrom() + " to: " + m.getTo())
-                .forEach(System.out::println);
             assertThat(mailRepository.getByUserMail(ADDRESS1)).containsOnly(mail1to2, mail3to1);
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,7 +73,7 @@ public abstract class AbstractMailRepositoryTest {
     }
 
     @Test(expected = MailNotFoundException.class)
-    public void removeShouldWorkOnReceiver() throws Exception {
+    public void removeByUserMailAndIdShouldWorkOnReceiver() throws Exception {
         Mail mail = new Mail(ADDRESS1, ADDRESS2, TITLE, CONTENT);
         mailRepository.add(mail);
         Integer mailId = mail.getId();
@@ -86,7 +82,7 @@ public abstract class AbstractMailRepositoryTest {
     }
 
     @Test(expected = MailNotFoundException.class)
-    public void removeShouldWorkOnSender() throws Exception {
+    public void removeByUserMailAndIdShouldWorkOnSender() throws Exception {
         Mail mail = new Mail(ADDRESS1, ADDRESS2, TITLE, CONTENT);
         mailRepository.add(mail);
         Integer mailId = mail.getId();
