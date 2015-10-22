@@ -84,4 +84,20 @@ public class MailJPARepository implements MailRepository {
             JPAHelper.handleHibernateException(e, tx);
         }
     }
+
+    @Override
+    public void removeByUserMail(String userMail) throws StorageException {
+        Transaction tx = null;
+        try (Session session = factory.openSession()) {
+            tx = session.beginTransaction();
+            Query q = session
+                    .createSQLQuery("delete from Mail where (sender=:from OR recipient=:to)")
+                    .setParameter("from", userMail)
+                    .setParameter("to", userMail);
+            q.executeUpdate();
+            tx.commit();
+        } catch (HibernateException e) {
+            JPAHelper.handleHibernateException(e, tx);
+        }
+    }
 }

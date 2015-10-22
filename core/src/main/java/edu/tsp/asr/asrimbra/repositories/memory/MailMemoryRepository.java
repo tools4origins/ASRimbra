@@ -45,4 +45,11 @@ public class MailMemoryRepository implements MailRepository {
             mails.remove(maybeMail.get());
         }
     }
+
+    @Override
+    public void removeByUserMail(String userMail) throws StorageException {
+        mails.stream()
+                .filter(m -> m.getFrom().equals(userMail) || m.getTo().equals(userMail))
+                .forEach(mails::remove);
+    }
 }

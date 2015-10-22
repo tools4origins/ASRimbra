@@ -80,7 +80,6 @@ public class UserJPARepository implements UserRepository {
             e.printStackTrace();
             throw new StorageException();
         }
-        System.out.println("e");
 
         if(user == null) {
             throw new UserNotFoundException();
@@ -106,7 +105,6 @@ public class UserJPARepository implements UserRepository {
             e.printStackTrace();
             throw new StorageException();
         } catch (UserNotFoundException e) {
-            System.out.println("User not found, " + login);
             // returned value is an Optional, we allow user to stay null
         }
 

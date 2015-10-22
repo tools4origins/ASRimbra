@@ -15,7 +15,7 @@ Project made for a scholar microprojet
 
 ## Configuration
 
-You can configure ASRimbra behavior using config.properties
+You can configure ASRimbra behavior using the constant defined in the different modules
 
 ## Installation
 You need to have maven and Java JDK 1.8+ installed on your computer first.
@@ -30,22 +30,16 @@ To package DirectoryManager use, *in its subfolder*:
 
 > `mvn package`
 
-This generated target/ASRimbra-DirectoryManager-{version}-jar-with-dependencies.jar that you can then move and use wherever you like.
+This generated target/ASRimbra-DirectoryManager-{version}-jar-with-dependencies.jar.
 
 To package MailboxManager use, *in its subfolder*:
 > `mvn package`
 
-This generated target/ASRimbra-MailboxManager-{version}-jar-with-dependencies.jar that you can then move and use wherever you like.
+This generated target/ASRimbra-MailboxManager-{version}-jar-with-dependencies.jar .
 
-You can launch both managers *if you did not move them* using *in their subfolders*
-:
+You can launch both managers using, *in their subfolders*:
 > `mvn exec:java`
 
-or directly with java, wherever you want:
-> `cd somewhere/`
->
-> `java -jar {name of the jar}.jar`
-@todo : fix this
 ## Infrastructure
 
 We have a nice infrastructure !
@@ -53,12 +47,6 @@ We have a nice infrastructure !
 You can find the basic infrastructure at ./ASRimbra_architecture.png
 
 Some choice were made to improve scalability, software evolution and consistency.
-
-Why do we believe than our choices were goods ? Because anyone can do this without having to
-touch the code:
-./ASRimbra_architecture_rev.png
-
-See more at section
 
 ### Clients
 Both ManagerClient and AdministrationClient are web clients. They can be resume to a single static web page having forms
@@ -187,11 +175,9 @@ RemoteRepositories are basically a **proxy** for a remote repository. It uses**s
 cases the responses is need to go further in the algorithm, asynchronous/buffered messages/inversion of control/etc
 would not have been really useful.
 
-@todo : reload javadoc
-
 ## Distributed ASRimbra
 Our goal is to have this:
-./ASRimbra_architecture_rev.png
+./ASRimbra_architecture.png
 
 The most important point is that we do not need to change our code : some configurations
 may not be compatible with this (eg: use of MemoryRepositiories), but the basic one is.
@@ -222,7 +208,7 @@ is very, very good to deliver static files.
 
 #### Deploy servers
 All your servers must be in a private LAN.
-Change config.properties so that they use your new urls.
+Change properties in modules so that they use your new urls.
 
 #### Change DNS configuration
 You need to create as many entries in your DNS server as there is in :

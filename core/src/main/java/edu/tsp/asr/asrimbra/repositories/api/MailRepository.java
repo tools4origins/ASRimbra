@@ -11,4 +11,5 @@ public interface MailRepository {
     Mail getByUserMailAndId(String userMail, Integer id) throws MailNotFoundException, StorageException;
     void add(Mail mail) throws StorageException;
     void removeByUserMailAndId(String userMail, Integer id) throws StorageException;
+    void removeByUserMail(String userMail) throws StorageException;
 }

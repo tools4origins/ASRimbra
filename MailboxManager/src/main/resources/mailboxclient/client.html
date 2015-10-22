@@ -48,11 +48,16 @@
                 var form = $(this);
                 var urlTemplate = form.data('action');
                 var url = urlTemplate;
-                var reg = /\/(:[^/]+)/g;
+                console.log(url);
+                var reg = /\/:([^/]+)/g;
+                console.log(reg);
                 var output = $("#"+form.data('target'));
-                while (varName = reg.exec(form.data('action'))) {
-                    url.replace(varName, form.find('[name="'+varName+'"]').val());
+                while (match = reg.exec(form.data('action'))) {
+                    var varName=match[1];
+                    console.log(varName);
+                    url = url.replace(":"+varName, form.find('[name="'+varName+'"]').val());
                 }
+                console.log(url)
 
                 output.empty();
                 $.ajax({
@@ -62,10 +67,9 @@
                     success: function(data) {
                         output.html(data).css("color", "black");
                     },
-                    error:  function(data) {
-                    console.log('error');
-                    console.log(data);
-                        output.html(data.responseText).css("color", "red");
+                    error:  function(data, a, b, c) {
+                        console.log(data, a,b,c);
+                        output.html(data.responseText || data.statusText).css("color", "red");
                     },
                     xhrFields: {
                         withCredentials: true

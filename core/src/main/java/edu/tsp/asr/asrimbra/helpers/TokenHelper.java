@@ -1,4 +1,4 @@
-package edu.tsp.asr.asrimbra;
+package edu.tsp.asr.asrimbra.helpers;
 
 import de.rtner.security.auth.spi.SimplePBKDF2;
 
@@ -17,7 +17,7 @@ import de.rtner.security.auth.spi.SimplePBKDF2;
  * As it is a scholar project, we use a simple key and do not wonders if it will be used by someone else.
  *
  */
-public final class TokenManager {
+public final class TokenHelper {
     public static String key = "";
 
     public static String get(String username) {

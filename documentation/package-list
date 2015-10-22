@@ -1,8 +1,0 @@
-edu.tsp.asr.asrimbra
-edu.tsp.asr.asrimbra.entities
-edu.tsp.asr.asrimbra.exceptions
-edu.tsp.asr.asrimbra.repositories.api
-edu.tsp.asr.asrimbra.repositories.jpa
-edu.tsp.asr.asrimbra.repositories.memory
-edu.tsp.asr.asrimbra.repositories.remote
-edu.tsp.asr.asrimbra.transformers

@@ -1,9 +1,13 @@
 package edu.tsp.asr.asrimbra;
 
+import com.goebl.david.Request;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
 import edu.tsp.asr.asrimbra.exceptions.ExistingUserException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
+import edu.tsp.asr.asrimbra.helpers.RemoteHelper;
+import edu.tsp.asr.asrimbra.helpers.SparkHelper;
+import edu.tsp.asr.asrimbra.helpers.TokenHelper;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
 import edu.tsp.asr.asrimbra.repositories.jpa.UserJPARepository;
 import edu.tsp.asr.asrimbra.transformers.JsonTransformer;
@@ -11,7 +15,10 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import spark.ResponseTransformer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static spark.Spark.before;
 import static spark.Spark.delete;
@@ -26,10 +33,9 @@ public class DirectoryManager {
     private static final ResponseTransformer transformer = new JsonTransformer();
     private static final Integer PORT_LISTENED = 7654;
     private static final String HIBERNATE_CONFIG_FILE = "META-INF/hibernateDirectoryManager.cfg.xml";
+    private static String MAILBOX_MANAGER_URI =  "http://localhost:4567";
+    private static String DIRECTORY_MANAGER_ACCOUNT = "root";
 
-    // @todo : forms used on edu.tsp.asr.asrimbra.client should be in the same page
-    // @todo: merge forms, all should use mail and not email.
-    // @todo : deleting user should remove its mails
     public static void main(String[] a) {
         // Specifies the port listened by the DirectoryManager
         port(PORT_LISTENED);
@@ -46,10 +52,12 @@ public class DirectoryManager {
 
         // Populate repository in order to facilitate tests
         try {
-            User u = new User("guyomarc@tem-tsp.eu", "passwd");
-            u.setAdmin();
-            userRepository.add(u);
-            userRepository.add(new User("atilalla@tem-tsp.eu", "passwd2"));
+            User u1 = new User("atilalla@tem-tsp.eu", "passwd");
+            User u2 = new User("guyomarc@tem-tsp.eu", "passwd2");
+            u1.setAdmin();
+            u2.setAdmin();
+            userRepository.add(u1);
+            userRepository.add(u2);
         } catch (StorageException | ExistingUserException e) {
             e.printStackTrace();
         }
@@ -95,10 +103,16 @@ public class DirectoryManager {
         }, transformer);
 
         options("/user/removeByMail/:mail", SparkHelper.generateOptionRoute("DELETE"));
-
         delete("/user/removeByMail/:mail", (request, response) -> {
-            String userMail = request.queryParams("mail");
+            String userMail = request.params("mail");
+            System.out.println("user: "+userMail);
             userRepository.removeByMail(userMail);
+
+            // Remove mails associated to userMail
+            Map<String, Object> params = new HashMap<>();
+            params.put("token", TokenHelper.get(DIRECTORY_MANAGER_ACCOUNT));
+            params.put("mail", userMail);
+            RemoteHelper.getRemoteString(MAILBOX_MANAGER_URI + "/admin/removeByUserMail", Request.Method.POST, params);
             response.status(202);
             return "";
         }, transformer);
@@ -124,9 +138,7 @@ public class DirectoryManager {
         });
 
         get("/user/getByMail", (request, response) -> {
-            System.out.println("a");
             SparkHelper.checkQueryParamsNullity(request, "mail");
-            System.out.println("b");
             return userRepository.getByMail(request.queryParams("mail"));
         }, transformer);
 
@@ -134,7 +146,8 @@ public class DirectoryManager {
             return userRepository.getAll();
         }, transformer);
 
-        // facilitate tests, should be removed in prod since it is quite dangerous
+        // facilitate tests, you may want to remove it in prod since it is quite dangerous
+        // currently there is no propagation, by choice, since it is for tests & dangerous
         get("/user/empty", (request, response) -> {
             List<User> users = userRepository.getAll();
             users.stream()

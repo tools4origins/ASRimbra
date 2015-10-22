@@ -5,6 +5,8 @@ import edu.tsp.asr.asrimbra.entities.MailingList;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.exceptions.MailNotFoundException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
+import edu.tsp.asr.asrimbra.helpers.SparkHelper;
+import edu.tsp.asr.asrimbra.helpers.TokenHelper;
 import edu.tsp.asr.asrimbra.repositories.api.MailRepository;
 import edu.tsp.asr.asrimbra.repositories.api.MailingListRepository;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
@@ -31,6 +33,7 @@ public class MailboxManager {
     private static Integer PORT_LISTENED = 4567;
     private static String HIBERNATE_CONFIG_FILE = "META-INF/hibernateMailboxManager.cfg.xml";
     private static String DIRECTORY_MANAGER_URL = "http://localhost:7654";
+    private static String DIRECTORY_MANAGER_ACCOUNT = "root";
 
     public static void main(String[] a) {
         // @todo: read config -> http://www.mkyong.com/java/java-properties-file-examples/
@@ -93,7 +96,7 @@ public class MailboxManager {
             );
 
             if (opt.isPresent()) {
-                response.cookie(TOKEN_COOKIE_NAME, TokenManager.get(request.queryParams("mail")));
+                response.cookie(TOKEN_COOKIE_NAME, TokenHelper.get(request.queryParams("mail")));
                 return "";
             } else {
                 halt(403, "Bad credentials :(");
@@ -108,13 +111,13 @@ public class MailboxManager {
 
         before("/mailbox/*", (request, response) -> {
             String token = request.cookie(TOKEN_COOKIE_NAME);
-            if (!TokenManager.checkToken(token)) {
+            if (!TokenHelper.checkToken(token)) {
                 halt(401, "You are not logged in :(");
             }
         });
 
         get("/mailbox/", (request, response) -> {
-            String userMail = TokenManager.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
+            String userMail = TokenHelper.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
             return mailRepository.getByUserMail(userMail);
         }, transformer);
 
@@ -122,7 +125,7 @@ public class MailboxManager {
         get("/mailbox/:id", (request, response) -> {
             try {
                 Integer id = Integer.parseInt(request.params(":id"));
-                String userMail = TokenManager.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
+                String userMail = TokenHelper.extractUserName(request.cookie(TOKEN_COOKIE_NAME));
                 return mailRepository.getByUserMailAndId(userMail, id);
             } catch (MailNotFoundException e) {
                 halt(404, "Mail not found");
@@ -137,7 +140,7 @@ public class MailboxManager {
             Integer id = 0;
             try {
                 id = Integer.parseInt(request.params(":id"));
-                String userMail = TokenManager.extractUserName(request.cookie("token"));
+                String userMail = TokenHelper.extractUserName(request.cookie("token"));
                 mailRepository.removeByUserMailAndId(userMail, id);
                 response.status(204);
             } catch (NumberFormatException e) {
@@ -150,7 +153,7 @@ public class MailboxManager {
         post("/mailbox/send/", (request, response) -> {
             SparkHelper.checkQueryParamsNullity(request, "to", "title", "content");
 
-            String from = TokenManager.extractUserName(request.cookie("token"));
+            String from = TokenHelper.extractUserName(request.cookie("token"));
             String to = request.queryParams("to");
             String title = request.queryParams("title");
             String content = request.queryParams("content");
@@ -174,5 +177,22 @@ public class MailboxManager {
                 return newMail.getId();
             }
         }, transformer);
+
+        post("/admin/removeByUserMail", ((request, response) -> {
+            SparkHelper.checkQueryParamsNullity(request, "mail", "token");
+
+            String token = request.queryParams("token");
+            System.out.println(request.params("mail"));
+            System.out.println(TokenHelper.checkToken(token));
+            System.out.println(TokenHelper.extractUserName(token).equals(DIRECTORY_MANAGER_ACCOUNT));
+            if (!TokenHelper.checkToken(token) ||
+                    !TokenHelper.extractUserName(token).equals(DIRECTORY_MANAGER_ACCOUNT)) {
+                halt(401, "Nothing to do here :(");
+            } else {
+                mailRepository.removeByUserMail(request.queryParams("mail"));
+            }
+
+            return "";
+        }));
     }
 }

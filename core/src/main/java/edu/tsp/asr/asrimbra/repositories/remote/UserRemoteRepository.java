@@ -1,14 +1,9 @@
 package edu.tsp.asr.asrimbra.repositories.remote;
 
-import com.goebl.david.Request;
 import com.goebl.david.Request.Method;
-import com.goebl.david.Webb;
-import com.goebl.david.WebbException;
-import com.google.gson.JsonObject;
-import edu.tsp.asr.asrimbra.JSONHelper;
+import edu.tsp.asr.asrimbra.helpers.RemoteHelper;
 import edu.tsp.asr.asrimbra.entities.Role;
 import edu.tsp.asr.asrimbra.entities.User;
-import edu.tsp.asr.asrimbra.exceptions.MethodNotAllowedException;
 import edu.tsp.asr.asrimbra.exceptions.StorageException;
 import edu.tsp.asr.asrimbra.exceptions.UserNotFoundException;
 import edu.tsp.asr.asrimbra.repositories.api.UserRepository;
@@ -40,7 +35,7 @@ public class UserRemoteRepository implements UserRepository {
         params.put("mail", user.getMail());
         params.put("passwordHash", user.getPasswordHash());
         params.put("role", user.getRole());
-        getRemoteString("add", Method.POST, params);
+        RemoteHelper.getRemoteString("add", Method.POST, params);
         // @todo : test if no exceptions
     }
 
@@ -48,7 +43,7 @@ public class UserRemoteRepository implements UserRepository {
     @Override
     public void removeByMail(String mail) throws StorageException {
         Map<String, Object> params = new HashMap<>();
-        getRemoteObject("removeByMail/" + mail, Method.DELETE, params);
+        RemoteHelper.getRemoteObject(baseURI+"removeByMail/" + mail, Method.DELETE, params);
         // @todo : test if no exceptions
     }
 
@@ -56,24 +51,21 @@ public class UserRemoteRepository implements UserRepository {
     public List<User> getAll() throws StorageException {
         List<User> users = new ArrayList<>();
         Map<String, Object> params = new HashMap<>();
-        JSONArray array = getRemoteArray("getAll", Method.GET, params);
-        System.out.println(array);
-        System.out.println(array.length());
+        JSONArray array = RemoteHelper.getRemoteArray(baseURI+"getAll", Method.GET, params);
         User user;
         for (int i = 0; i < array.length(); ++i) {
 
             try {
                 JSONObject userData = array.getJSONObject(i);
-                user = JSONHelper.JSONToUser(userData);
+                user = RemoteHelper.JSONToUser(userData);
                 users.add(user);
             } catch (JSONException e) {
-                System.out.println("Unable to parse JSON");
+                System.err.println("Unable to parse JSON");
                 e.printStackTrace();
                 throw new StorageException();
             }
 
         }
-        System.out.println(users.size());
 
         return users;
     }
@@ -82,7 +74,7 @@ public class UserRemoteRepository implements UserRepository {
     public User getByMail(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("mail", mail);
-        getRemoteObject("getByMail", Method.GET, params);
+        RemoteHelper.getRemoteObject(baseURI+"getByMail", Method.GET, params);
         return null;
     }
 
@@ -91,7 +83,7 @@ public class UserRemoteRepository implements UserRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("login", login);
         params.put("password", password);
-        JSONObject obj = getRemoteObject("getRoleByCredentials", GET, params);
+        JSONObject obj = RemoteHelper.getRemoteObject(baseURI+"getRoleByCredentials", GET, params);
 
         // obj is of the form JSONObject {} if user not found else JSONObject { "value" = "ADMIN" } for instance
         // JSONException is thrown when there is no value (user not found)
@@ -108,86 +100,18 @@ public class UserRemoteRepository implements UserRepository {
     public void setAdmin(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("mail", mail);
-        getRemoteString("setAdmin", Method.POST, params);
+        RemoteHelper.getRemoteString(baseURI+"setAdmin", Method.POST, params);
     }
 
     @Override
     public void setSimpleUser(String mail) throws UserNotFoundException, StorageException {
         Map<String, Object> params = new HashMap<>();
         params.put("mail", mail);
-        getRemoteString("setSimpleUser", Method.POST, params);
+        RemoteHelper.getRemoteString(baseURI+"setSimpleUser", Method.POST, params);
     }
 
     public void empty() throws StorageException {
         Map<String, Object> params = new HashMap<>();
-        getRemoteString("empty", Method.GET, params);
-    }
-
-    private Request generateRequest(String URI, Method method, Map<String, Object> params) throws StorageException {
-        Webb webb = Webb.create();
-        Request request;
-        try {
-            switch (method) {
-                case GET:
-                    request = webb.get(baseURI+URI);
-                    break;
-                case POST:
-                    request = webb.post(baseURI+URI);
-                    break;
-                case PUT:
-                    request = webb.put(baseURI+URI);
-                    break;
-                case DELETE:
-                    request = webb.delete(baseURI+URI);
-                    break;
-                default:
-                    throw new MethodNotAllowedException();
-            }
-        } catch (MethodNotAllowedException e) {
-            System.out.println(method + " not allowed on " + baseURI+URI);
-            throw new StorageException();
-        }
-
-        for(Map.Entry<String, Object> param : params.entrySet()) {
-            request.param(param.getKey(), param.getValue());
-        }
-        request.ensureSuccess();
-
-        return request;
-    }
-
-    private JSONArray getRemoteArray(String URI, Method method, Map<String, Object> params) throws StorageException {
-        try {
-            Request request = generateRequest(URI, method, params);
-            return request.asJsonArray().getBody();
-        } catch (WebbException e) {
-            return handleWebbException(e, URI, method);
-        }
-    }
-
-    private JSONObject getRemoteObject(String URI, Method method, Map<String, Object> params) throws StorageException {
-        try {
-            Request request = generateRequest(URI, method, params);
-            return request.asJsonObject().getBody();
-        } catch (WebbException e) {
-            handleWebbException(e, URI, method);
-            return null;
-        }
-    }
-
-    private String getRemoteString(String URI, Method method, Map<String, Object> params) throws StorageException {
-        try {
-            Request request = generateRequest(URI, method, params);
-            return request.asString().getBody();
-        } catch (WebbException e) {
-            handleWebbException(e, URI, method);
-        }
-        return null;
-    }
-
-    private JSONArray handleWebbException(WebbException e, String URI, Method method) throws StorageException {
-        System.out.println(method + " on " + baseURI + URI + " did not worked");
-        e.printStackTrace();
-        throw new StorageException();
+        RemoteHelper.getRemoteString(baseURI+"empty", Method.GET, params);
     }
 }

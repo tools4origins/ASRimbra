@@ -1,4 +1,4 @@
-package edu.tsp.asr.asrimbra;
+package edu.tsp.asr.asrimbra.helpers;
 
 import spark.Request;
 import spark.Route;
@@ -10,8 +10,8 @@ public class SparkHelper {
     public static void checkQueryParamsNullity(Request request, String... params) {
         for (String paramName : params) {
             if(request.queryParams(paramName)==null) {
-                String errorMessage = "Bad parameters, "+paramName+" must not be null";
-                System.out.println(errorMessage);
+                String errorMessage = "Bad parameters, " + paramName + " must not be null";
+                System.err.println(errorMessage);
                 halt(400, errorMessage);
                 return;
             }
